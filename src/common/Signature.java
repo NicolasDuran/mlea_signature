@@ -1,5 +1,7 @@
 package common;
 
+import java.awt.Color;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.FileInputStream;
@@ -49,5 +51,53 @@ public class Signature {
 
 	public ArrayList<Point> getPoints() {
 		return points;
+	}
+
+	public BufferedImage toImage() {
+		double minX = Double.MAX_VALUE;
+		double maxX = Double.MIN_VALUE;
+		double minY = Double.MAX_VALUE;
+		double maxY = Double.MIN_VALUE;
+
+		for (Point point : points) {
+			if (point.getX() < minX)
+				minX = point.getX();
+			if (point.getX() > maxX)
+				maxX = point.getX();
+			if (point.getY() < minY)
+				minY = point.getY();
+			if (point.getY() > maxY)
+				maxY = point.getY();
+		}
+
+		int width = (int) (maxX - minX) + 1;
+		int height = (int) (maxY - minY) + 1;
+
+		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+
+		for (int h = 0; h < height; h++) {
+			for (int w = 0; w < width; w++) {
+				image.setRGB(w, h, Color.black.getRGB());
+			}
+		}
+		for (Point point : points)
+			image.setRGB((int)(point.getX() - minX), (int)(point.getY() - minY), Color.white.getRGB());
+
+		return image;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("Signature{");
+		builder.append(System.getProperty("line.separator"));
+		for (Point point : points) {
+			builder.append("\t");
+			builder.append(point.toString());
+			builder.append(System.getProperty("line.separator"));
+		}
+		builder.append("}");
+
+		return builder.toString();
 	}
 }
