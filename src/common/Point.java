@@ -25,7 +25,8 @@ public class Point {
 		this.azimuth = azimuth;
 		this.altitude = altitude;
 		this.pressure = pressure;
-		this.isCritical = false;
+
+		this.isCritical = true;
 	}
 
 	public int getAltitude() {
@@ -61,9 +62,17 @@ public class Point {
 		return button;
 	}
 
+	public boolean isCritical() {
+		return isCritical;
+	}
+
 	public void rotate(double cos, double sin) {
 		this.x = this.x * cos - this.y * sin;
 		this.y = this.x * sin + this.y * cos;
+	}
+
+	public void setCritical(boolean isCritical) {
+		this.isCritical = isCritical;
 	}
 
 	public void setX(double x) {
@@ -72,14 +81,6 @@ public class Point {
 
 	public void setY(double y) {
 		this.y = y;
-	}
-
-	public boolean isCritical() {
-		return isCritical;
-	}
-
-	public void setCritical(boolean isCritical) {
-		this.isCritical = isCritical;
 	}
 
 	@Override

@@ -4,11 +4,14 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.DataInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+
+import javax.imageio.ImageIO;
 
 public class Signature {
 	protected ArrayList<Point> points = new ArrayList<Point>();
@@ -36,7 +39,7 @@ public class Signature {
 					points.add(new Point(Double.parseDouble(tokens[0]),
 							Double.parseDouble(tokens[1]),
 							Long.parseLong(tokens[2]),
-							Boolean.parseBoolean(tokens[3]),
+							Integer.parseInt(tokens[3]) == 1,
 							Integer.parseInt(tokens[4]),
 							Integer.parseInt(tokens[5]),
 							Integer.parseInt(tokens[6])));
@@ -53,8 +56,27 @@ public class Signature {
 		}
 	}
 
+	public ArrayList<Point> getCriticalPoints() {
+		ArrayList<Point> criticalPoints = new ArrayList<Point>();
+
+		for (Point point : points)
+			if (point.isCritical())
+				criticalPoints.add(point);
+
+		return criticalPoints;
+	}
+
 	public ArrayList<Point> getPoints() {
 		return points;
+	}
+
+	public void saveImage(String filename) {
+		try {
+			ImageIO.write(toImage(), "png", new File(filename));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public BufferedImage toImage() {
@@ -79,13 +101,17 @@ public class Signature {
 
 		BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
-		for (int h = 0; h < height; h++) {
-			for (int w = 0; w < width; w++) {
-				image.setRGB(w, h, Color.black.getRGB());
-			}
-		}
+		for (int h = 0; h < height; h++)
+			for (int w = 0; w < width; w++)
+				image.setRGB(w, h, Color.white.getRGB());
+
 		for (Point point : points)
-			image.setRGB((int)(point.getX() - minX), (int)(point.getY() - minY), Color.white.getRGB());
+			if (!point.isButton())
+				image.setRGB((int)(point.getX() - minX), (int)(point.getY() - minY), Color.green.getRGB());
+			else if (point.isCritical())
+				image.setRGB((int)(point.getX() - minX), (int)(point.getY() - minY), Color.red.getRGB());
+			else
+				image.setRGB((int)(point.getX() - minX), (int)(point.getY() - minY), Color.blue.getRGB());
 
 		return image;
 	}
