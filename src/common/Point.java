@@ -11,8 +11,9 @@ public class Point {
 	private boolean button;
 	private int azimuth;
 	private int altitude;
-
 	private int pressure;
+
+	private boolean isCritical;
 
 	public Point(double x, double y, long time, boolean button, int azimuth,
 			int altitude, int pressure) {
@@ -24,6 +25,7 @@ public class Point {
 		this.azimuth = azimuth;
 		this.altitude = altitude;
 		this.pressure = pressure;
+		this.isCritical = false;
 	}
 
 	public int getAltitude() {
@@ -70,6 +72,14 @@ public class Point {
 
 	public void setY(double y) {
 		this.y = y;
+	}
+
+	public boolean isCritical() {
+		return isCritical;
+	}
+
+	public void setCritical(boolean isCritical) {
+		this.isCritical = isCritical;
 	}
 
 	@Override
