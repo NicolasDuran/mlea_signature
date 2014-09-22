@@ -1,10 +1,12 @@
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import preprocessing.Normalizer;
+import preprocessing.Preprocessor;
 
 import common.LabeledSignature;
 import common.Signature;
@@ -37,7 +39,7 @@ public class SignatureSystem {
 
 			while ((line = br.readLine()) != null) {
 				LabeledSignature s = new LabeledSignature(line);
-				Normalizer.normalize(s);
+				Preprocessor.normalizeAndReduce(s);
 				database.add(s);
 			}
 		} catch (FileNotFoundException e) {
@@ -72,59 +74,72 @@ public class SignatureSystem {
 		int trainSize = (int)(6.0 * genuines.size() / 10.0); // 60% of the database size
 		double globalPerfs = 0;
 
-		for (int i = 0; i < genuines.size(); i++)
-		{
-			trainSignatures.clear();
-			testSignatures.clear();
+		File logFile = new File("log/perfs.log");
+		FileWriter writer;
+		try {
+			writer = new FileWriter(logFile);
 
-			// Select train and test signatures from genuine database
-			int borneSup = (i + trainSize) % genuines.size();
-			for (int k = 0; k < genuines.size(); k++)
+			for (int i = 0; i < genuines.size(); i++)
 			{
-				if (borneSup > i) {
-					if (k >= i && k < borneSup)
-						trainSignatures.add(genuines.get(k));
-					else
-						testSignatures.add(genuines.get(k));
-				}
-				else if (borneSup < i) {
-					if (k >= i && k < borneSup)
-						testSignatures.add(genuines.get(k));
-					else
-						trainSignatures.add(genuines.get(k));
-				}
-			}
+				trainSignatures.clear();
+				testSignatures.clear();
 
-			testSignatures.addAll(forgeries);
-
-			/* Compare two by two all test signatures, but avoid to compare two forgeries
-			 * signatures, because we don't know in this case */
-			int numberOfSuccess = 0;
-			int numberOfTests = 0;
-			for (int k = 0; k < testSignatures.size() - 1; k++)
-			{
-				LabeledSignature s1 = testSignatures.get(k);
-				for (int j = k + 1; j < testSignatures.size(); j++)
+				// Select train and test signatures from genuine database
+				int borneSup = (i + trainSize) % genuines.size();
+				for (int k = 0; k < genuines.size(); k++)
 				{
-					LabeledSignature s2 = testSignatures.get(j);
-
-					if (!s1.isGenuine() && !s2.isGenuine()) {
-						continue;
+					if (borneSup > i) {
+						if (k >= i && k < borneSup)
+							trainSignatures.add(genuines.get(k));
+						else
+							testSignatures.add(genuines.get(k));
 					}
-
-					boolean result = compareSignatures(s1, s2);
-					boolean realResult = (s1.getUserID() == s2.getUserID()) && (s1.isGenuine() && s2.isGenuine());
-					if (result == realResult) {
-						numberOfSuccess++;
+					else if (borneSup < i) {
+						if (k >= i && k < borneSup)
+							testSignatures.add(genuines.get(k));
+						else
+							trainSignatures.add(genuines.get(k));
 					}
-
-					numberOfTests++;
 				}
+
+				testSignatures.addAll(forgeries);
+
+				/* Compare two by two all test signatures, but avoid to compare two forgeries
+				 * signatures, because we don't know in this case */
+				int numberOfSuccess = 0;
+				int numberOfTests = 0;
+				for (int k = 0; k < testSignatures.size() - 1; k++)
+				{
+					LabeledSignature s1 = testSignatures.get(k);
+					for (int j = k + 1; j < testSignatures.size(); j++)
+					{
+						LabeledSignature s2 = testSignatures.get(j);
+
+						if (!s1.isGenuine() && !s2.isGenuine()) {
+							continue;
+						}
+
+						boolean result = compareSignatures(s1, s2);
+						boolean realResult = (s1.getUserID() == s2.getUserID()) && (s1.isGenuine() && s2.isGenuine());
+						if (result == realResult) {
+							numberOfSuccess++;
+						}
+
+						writer.write(s1.getFilename() + " - " + s2.getFilename() + " : decision = " + result + ", real = " + realResult + System.getProperty("line.separator"));
+
+						numberOfTests++;
+					}
+				}
+
+				double perfs = (double)numberOfSuccess / (double)numberOfTests;
+				writer.write("Run " + i + " : success = " + (100.0 * perfs) + "%" + System.getProperty("line.separator"));
+				globalPerfs += perfs;
 			}
 
-			globalPerfs += (double)numberOfSuccess / (double)numberOfTests;
+			globalPerfs = 100.0 * globalPerfs / genuines.size();
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-
-		globalPerfs = 100.0 * globalPerfs / genuines.size();
 	}
 }

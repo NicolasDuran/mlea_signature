@@ -6,7 +6,7 @@ public class LabeledSignature extends Signature
 	private boolean genuine;
 
 	public LabeledSignature(Signature s, int userID, boolean genuine) {
-		super(s.getPoints());
+		super(s);
 		this.userID = userID;
 		this.genuine = genuine;
 	}

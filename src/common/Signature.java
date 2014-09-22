@@ -13,14 +13,20 @@ import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
-public class Signature {
+public class Signature
+{
+	protected String filename;
 	protected ArrayList<Point> points = new ArrayList<Point>();
 
-	public Signature(ArrayList<Point> points) {
-		this.points = points;
+	public Signature(Signature s) {
+		this.points = s.getPoints();
+		this.filename = s.getFilename();
 	}
 
-	public Signature(String path) throws SignatureException {
+	public Signature(String path) throws SignatureException
+	{
+		this.filename = path;
+
 		FileInputStream fstream;
 		try {
 			fstream = new FileInputStream(path);
@@ -68,6 +74,10 @@ public class Signature {
 
 	public ArrayList<Point> getPoints() {
 		return points;
+	}
+
+	public String getFilename() {
+		return filename;
 	}
 
 	public void saveImage(String filename) {
