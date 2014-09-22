@@ -35,7 +35,7 @@ public class Signature {
 					points.add(new Point(Double.parseDouble(tokens[0]),
 							Double.parseDouble(tokens[1]),
 							Long.parseLong(tokens[2]),
-							Boolean.parseBoolean(tokens[3]),
+							Integer.parseInt(tokens[3]) == 1,
 							Integer.parseInt(tokens[4]),
 							Integer.parseInt(tokens[5]),
 							Integer.parseInt(tokens[6])));
@@ -50,6 +50,16 @@ public class Signature {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	public ArrayList<Point> getCriticalPoints() {
+		ArrayList<Point> criticalPoints = new ArrayList<Point>();
+
+		for (Point point : points)
+			if (point.isCritical())
+				criticalPoints.add(point);
+
+		return criticalPoints;
 	}
 
 	public ArrayList<Point> getPoints() {
@@ -89,11 +99,15 @@ public class Signature {
 
 		for (int h = 0; h < height; h++)
 			for (int w = 0; w < width; w++)
-				image.setRGB(w, h, Color.black.getRGB());
+				image.setRGB(w, h, Color.white.getRGB());
 
 		for (Point point : points)
-			if (point.isCritical())
-				image.setRGB((int)(point.getX() - minX), (int)(point.getY() - minY), Color.white.getRGB());
+			if (!point.isButton())
+				image.setRGB((int)(point.getX() - minX), (int)(point.getY() - minY), Color.green.getRGB());
+			else if (point.isCritical())
+				image.setRGB((int)(point.getX() - minX), (int)(point.getY() - minY), Color.red.getRGB());
+			else
+				image.setRGB((int)(point.getX() - minX), (int)(point.getY() - minY), Color.blue.getRGB());
 
 		return image;
 	}

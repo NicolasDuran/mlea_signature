@@ -7,6 +7,14 @@ import common.Signature;
 
 public class Reducer {
 
+	public void distances(Signature signature) {
+		int n = signature.getPoints().size();
+		ArrayList<Point> points = signature.getPoints();
+
+		for (int i = 0; i < n - 1; i++)
+			System.out.println(i + ": " + Point.distance(points.get(i), points.get(i + 1)));
+	}
+
 	/**
 	 * Reduce the number of points by computing speed and keeping only local minimums.
 	 * @param signature The signature to reduce.
