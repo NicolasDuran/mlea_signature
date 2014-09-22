@@ -11,12 +11,16 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 public class Signature {
-	private ArrayList<Point> points = new ArrayList<Point>();
+	protected ArrayList<Point> points = new ArrayList<Point>();
 
-	public Signature(String filename) throws SignatureException {
+	public Signature(ArrayList<Point> points) {
+		this.points = points;
+	}
+
+	public Signature(String path) throws SignatureException {
 		FileInputStream fstream;
 		try {
-			fstream = new FileInputStream(filename);
+			fstream = new FileInputStream(path);
 
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
