@@ -25,6 +25,7 @@ public class Point {
 		this.azimuth = azimuth;
 		this.altitude = altitude;
 		this.pressure = pressure;
+
 		this.isCritical = true;
 	}
 
