@@ -12,7 +12,7 @@ public class Normalizer {
 	 * @return A string containing the minimum, maximum an mean values for X and Y
 	 * and the mean values.
 	 */
-	private static String infos(Signature signature) {
+	private String infos(Signature signature) {
 		int n = signature.getPoints().size();
 		double meanX = 0;
 		double meanY = 0;
@@ -47,12 +47,11 @@ public class Normalizer {
 	 * Also reduce the number of points by keeping speed local minimum.
 	 * @param signature The signature to normalize.
 	 */
-	public static void normalize(Signature signature) {
-		Normalizer.rotate(signature);
-		Normalizer.resize(signature, 100);
-		System.out.println(infos(signature));
-		Normalizer.translateToCenter(signature);
-		Reducer.keepSlowestPoints(signature);
+	public void normalize(Signature signature) {
+		rotate(signature);
+		resize(signature, 100);
+		translateToCenter(signature);
+		new Reducer().keepSlowestPoints(signature);
 	}
 
 	/**
@@ -61,7 +60,7 @@ public class Normalizer {
 	 * @param signature The signature to resize.
 	 * @param size New signature size.
 	 */
-	private static void resize(Signature signature, int size) {
+	private void resize(Signature signature, int size) {
 		double minX = Double.MAX_VALUE;
 		double maxX = Double.MIN_VALUE;
 		double minY = Double.MAX_VALUE;
@@ -91,7 +90,7 @@ public class Normalizer {
 	 * squares method.
 	 * @param signature The signature to rotate.
 	 */
-	private static void rotate(Signature signature) {
+	private void rotate(Signature signature) {
 		SimpleRegression regression = new SimpleRegression(true);
 
 		for (Point point : signature.getPoints()) {
@@ -113,7 +112,7 @@ public class Normalizer {
 	 * Translate the signature to set the gravity center as origin.
 	 * @param signature The signature to translate.
 	 */
-	private static void translateToCenter(Signature signature) {
+	private void translateToCenter(Signature signature) {
 		int n = signature.getPoints().size();
 		double meanX = 0;
 		double meanY = 0;
