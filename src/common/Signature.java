@@ -51,6 +51,8 @@ public class Signature
 							Integer.parseInt(tokens[6])));
 				}
 			}
+
+			br.close();
 			in.close();
 
 		} catch (FileNotFoundException e) {

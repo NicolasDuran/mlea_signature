@@ -3,6 +3,7 @@ package features;
 import java.util.ArrayList;
 import java.util.Collection;
 
+@SuppressWarnings("serial")
 public class LocalFeatureVector extends ArrayList<ArrayList<Double>> {
 
 	public LocalFeatureVector() {

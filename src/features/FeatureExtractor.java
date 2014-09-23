@@ -10,7 +10,7 @@ public class FeatureExtractor {
 	public FeatureExtractor() {
 	}
 
-	private GlobalFeatureVector computeGlobalFeatures(Signature s)
+	private static GlobalFeatureVector computeGlobalFeatures(Signature s)
 	{
 		GlobalFeatureVector globVect = new GlobalFeatureVector();
 		double totalLength = 0;
@@ -97,7 +97,7 @@ public class FeatureExtractor {
 		return globVect;
 	}
 
-	private LocalFeatureVector computeLocalFeatures(Signature s)
+	private static LocalFeatureVector computeLocalFeatures(Signature s)
 	{
 		ArrayList<Double> pressure = new ArrayList<Double>();
 		ArrayList<Double> times = new ArrayList<Double>();
@@ -213,7 +213,7 @@ public class FeatureExtractor {
 		return locVect;
 	}
 
-	public GlobalFeatureVector extractGlobalFeature(Signature s)
+	public static GlobalFeatureVector extractGlobalFeature(Signature s)
 	{
 		GlobalFeatureVector features = computeGlobalFeatures(s);
 		GlobalFeatureVector v = new GlobalFeatureVector();
@@ -225,7 +225,7 @@ public class FeatureExtractor {
 		return v;
 	}
 
-	public LocalFeatureVector extractLocalFeature(Signature s)
+	public static LocalFeatureVector extractLocalFeature(Signature s)
 	{
 		LocalFeatureVector features = computeLocalFeatures(s);
 		LocalFeatureVector v = new LocalFeatureVector();

@@ -21,7 +21,7 @@ public class LabeledSignature extends Signature
 	{
 		String filename = "";
 
-		for (int i = path.length() - 1; i >= 0; i++) {
+		for (int i = path.length() - 1; i >= 0; i--) {
 			if (path.charAt(i) == '/') {
 				break;
 			}

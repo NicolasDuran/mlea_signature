@@ -20,7 +20,7 @@ public class SignatureSystem {
 
 	public void train(ArrayList<LabeledSignature> trainSignatures)
 	{
-		// TODO
+		// TODO ?
 	}
 
 	public boolean compareSignatures(Signature s1, Signature s2)
@@ -42,6 +42,8 @@ public class SignatureSystem {
 				Preprocessor.normalizeAndReduce(s);
 				database.add(s);
 			}
+
+			br.close();
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			return null;
@@ -71,8 +73,10 @@ public class SignatureSystem {
 		// Cross Validation Algorithm
 		ArrayList<LabeledSignature> trainSignatures = new ArrayList<LabeledSignature>();
 		ArrayList<LabeledSignature> testSignatures = new ArrayList<LabeledSignature>();
-		int trainSize = (int)(6.0 * genuines.size() / 10.0); // 60% of the database size
 		double globalPerfs = 0;
+
+		int trainSize = (int)(6.0 * genuines.size() / 10.0); // 60% of the database size
+		System.out.println("Train size = " + trainSize);
 
 		File logFile = new File("log/perfs.log");
 		FileWriter writer;
@@ -85,6 +89,8 @@ public class SignatureSystem {
 				testSignatures.clear();
 
 				// Select train and test signatures from genuine database
+				System.out.println("[" + i + "] Select train and test signatures");
+
 				int borneSup = (i + trainSize) % genuines.size();
 				for (int k = 0; k < genuines.size(); k++)
 				{
@@ -95,7 +101,7 @@ public class SignatureSystem {
 							testSignatures.add(genuines.get(k));
 					}
 					else if (borneSup < i) {
-						if (k >= i && k < borneSup)
+						if (k >= borneSup && k < i)
 							testSignatures.add(genuines.get(k));
 						else
 							trainSignatures.add(genuines.get(k));
@@ -104,8 +110,13 @@ public class SignatureSystem {
 
 				testSignatures.addAll(forgeries);
 
-				/* Compare two by two all test signatures, but avoid to compare two forgeries
-				 * signatures, because we don't know in this case */
+				// Train program
+				System.out.println("[" + i + "] Train program");
+				train(trainSignatures);
+
+				// Compare two by two all test signatures, but avoid to compare two forgeries
+				// signatures, because we don't know in this case
+				System.out.println("[" + i + "] Test program");
 				int numberOfSuccess = 0;
 				int numberOfTests = 0;
 				for (int k = 0; k < testSignatures.size() - 1; k++)
@@ -137,9 +148,17 @@ public class SignatureSystem {
 			}
 
 			globalPerfs = 100.0 * globalPerfs / genuines.size();
+
+			writer.write("---------------------------------------" + System.getProperty("line.separator"));
+			writer.write("Global performances : success = " + globalPerfs + "%" + System.getProperty("line.separator"));
 			writer.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public void compareSignaturesFromFile(String inputfile, String outputfile)
+	{
+
 	}
 }
