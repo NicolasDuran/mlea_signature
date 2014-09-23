@@ -151,6 +151,7 @@ public class SignatureSystem {
 
 			writer.write("---------------------------------------" + System.getProperty("line.separator"));
 			writer.write("Global performances : success = " + globalPerfs + "%" + System.getProperty("line.separator"));
+			System.out.println("Global performances : success = " + globalPerfs + "%");
 			writer.close();
 		} catch (IOException e) {
 			e.printStackTrace();

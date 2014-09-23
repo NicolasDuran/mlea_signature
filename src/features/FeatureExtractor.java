@@ -7,9 +7,6 @@ import common.Signature;
 
 public class FeatureExtractor {
 
-	public FeatureExtractor() {
-	}
-
 	private static GlobalFeatureVector computeGlobalFeatures(Signature s)
 	{
 		GlobalFeatureVector globVect = new GlobalFeatureVector();
