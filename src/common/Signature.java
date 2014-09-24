@@ -109,6 +109,7 @@ public class Signature {
 			else
 				image.setRGB((int)(point.getX() - minX), (int)(point.getY() - minY), Color.blue.getRGB());
 
+
 		return image;
 	}
 
