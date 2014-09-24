@@ -7,10 +7,7 @@ import common.Signature;
 
 public class FeatureExtractor {
 
-	public FeatureExtractor() {
-	}
-
-	private GlobalFeatureVector computeGlobalFeatures(Signature s)
+	private static GlobalFeatureVector computeGlobalFeatures(Signature s)
 	{
 		GlobalFeatureVector globVect = new GlobalFeatureVector();
 		double totalLength = 0;
@@ -97,7 +94,7 @@ public class FeatureExtractor {
 		return globVect;
 	}
 
-	private LocalFeatureVector computeLocalFeatures(Signature s)
+	private static LocalFeatureVector computeLocalFeatures(Signature s)
 	{
 		ArrayList<Double> pressure = new ArrayList<Double>();
 		ArrayList<Double> times = new ArrayList<Double>();
@@ -133,12 +130,18 @@ public class FeatureExtractor {
 
 			// Compute speed between critical points
 			if (p.isCritical()) {
-				if (p != null) {
+				if (previousCriticalPoint != null) {
 					double dt = p.getTime() - previousCriticalPoint.getTime();
-					double cvx = (p.getX() - previousCriticalPoint.getX()) / dt;
-					double cvy = (p.getY() - previousCriticalPoint.getY()) / dt;
-					double cax = cvx / dt;
-					double cay = cvy / dt;
+					double cvx = 0;
+					double cvy = 0;
+					double cax = 0;
+					double cay = 0;
+					if (dt != 0) {
+						cvx = (p.getX() - previousCriticalPoint.getX()) / dt;
+						cvy = (p.getY() - previousCriticalPoint.getY()) / dt;
+						cax = cvx / dt;
+						cay = cvy / dt;
+					}
 
 					criticalvx.add(cvx);
 					criticalvy.add(cvy);
@@ -155,10 +158,16 @@ public class FeatureExtractor {
 				double dx = s.getPoints().get(i + 1).getX() - p.getX();
 				double dy = s.getPoints().get(i + 1).getY() - p.getY();
 				double dt = s.getPoints().get(i + 1).getTime() - p.getTime();
-				double dvx = dx / dt;
-				double dvy = dy / dt;
-				double dax = dvx / dt;
-				double day = dvy / dt;
+				double dvx = 0;
+				double dvy = 0;
+				double dax = 0;
+				double day = 0;
+				if (dt != 0) {
+					dvx = dx / dt;
+					dvy = dy / dt;
+					dax = dvx / dt;
+					day = dvy / dt;
+				}
 
 				posdx.add(dx);
 				posdy.add(dy);
@@ -213,7 +222,7 @@ public class FeatureExtractor {
 		return locVect;
 	}
 
-	public GlobalFeatureVector extractGlobalFeature(Signature s)
+	public static GlobalFeatureVector extractGlobalFeature(Signature s)
 	{
 		GlobalFeatureVector features = computeGlobalFeatures(s);
 		GlobalFeatureVector v = new GlobalFeatureVector();
@@ -225,7 +234,7 @@ public class FeatureExtractor {
 		return v;
 	}
 
-	public LocalFeatureVector extractLocalFeature(Signature s)
+	public static LocalFeatureVector extractLocalFeature(Signature s)
 	{
 		LocalFeatureVector features = computeLocalFeatures(s);
 		LocalFeatureVector v = new LocalFeatureVector();

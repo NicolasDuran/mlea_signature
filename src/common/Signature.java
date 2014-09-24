@@ -13,13 +13,23 @@ import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
 
-public class Signature {
-	private ArrayList<Point> points = new ArrayList<Point>();
+public class Signature
+{
+	protected String filename;
+	protected ArrayList<Point> points = new ArrayList<Point>();
 
-	public Signature(String filename) throws SignatureException {
+	public Signature(Signature s) {
+		this.points = s.getPoints();
+		this.filename = s.getFilename();
+	}
+
+	public Signature(String path) throws SignatureException
+	{
+		this.filename = path;
+
 		FileInputStream fstream;
 		try {
-			fstream = new FileInputStream(filename);
+			fstream = new FileInputStream(path);
 
 			DataInputStream in = new DataInputStream(fstream);
 			BufferedReader br = new BufferedReader(new InputStreamReader(in));
@@ -41,6 +51,8 @@ public class Signature {
 							Integer.parseInt(tokens[6])));
 				}
 			}
+
+			br.close();
 			in.close();
 
 		} catch (FileNotFoundException e) {
@@ -64,6 +76,10 @@ public class Signature {
 
 	public ArrayList<Point> getPoints() {
 		return points;
+	}
+
+	public String getFilename() {
+		return filename;
 	}
 
 	public void saveImage(String filename) {
