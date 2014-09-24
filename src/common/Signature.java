@@ -64,6 +64,16 @@ public class Signature
 		}
 	}
 
+	public void deleteNotCritical() {
+		ArrayList<Point> criticalPoints = new ArrayList<Point>();
+
+		for (Point point : points)
+			if (point.isCritical())
+				criticalPoints.add(point);
+
+		this.points = criticalPoints;
+	}
+
 	public ArrayList<Point> getCriticalPoints() {
 		ArrayList<Point> criticalPoints = new ArrayList<Point>();
 
@@ -74,12 +84,12 @@ public class Signature
 		return criticalPoints;
 	}
 
-	public ArrayList<Point> getPoints() {
-		return points;
-	}
-
 	public String getFilename() {
 		return filename;
+	}
+
+	public ArrayList<Point> getPoints() {
+		return points;
 	}
 
 	public void saveImage(String filename) {

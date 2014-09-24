@@ -20,6 +20,5 @@ public class Preprocessor {
 	public static void normalizeAndReduce(Signature signature) {
 		new Normalizer().normalize(signature);
 		new Reducer().reduce(signature);
-		signature.saveImage("signature.png");
 	}
 }

@@ -8,11 +8,18 @@ public class Reducer {
 
 		new SpeedReducer().apply(signature);
 		new BraultReducer().apply(signature);
+
 		signature.getPoints().get(0).setCritical(true);
 		signature.getPoints().get(signature.getPoints().size() - 1).setCritical(true);
 
-		System.out.println("Total: " + signature.getCriticalPoints().size()
-				+ " critical points out of " + signature.getPoints().size() + " points");
+		int nTotal = signature.getPoints().size();
+		int nCritical = signature.getCriticalPoints().size();
+		signature.saveImage("signature.png");
+
+		signature.deleteNotCritical();
+
+		System.out.println("Total: " + nCritical
+				+ " critical points out of " + nTotal + " points");
 		System.out.println("===============");
 	}
 }
