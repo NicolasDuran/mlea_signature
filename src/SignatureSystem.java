@@ -12,9 +12,12 @@ import common.LabeledSignature;
 import common.Signature;
 import common.SignatureException;
 
+import features.FeatureExtractor;
+import features.LocalFeatureVector;
 
-public class SignatureSystem {
 
+public class SignatureSystem
+{
 	public SignatureSystem() {
 	}
 
@@ -23,10 +26,71 @@ public class SignatureSystem {
 		// TODO ?
 	}
 
-	public boolean compareSignatures(Signature s1, Signature s2)
+	/**
+	 * Compares two preprocessed signatures
+	 * @param s1 First signature
+	 * @param s2 Second signature
+	 * @return Returns the measured distance between those signature
+	 * and wether they are from the same person or not
+	 */
+	public CompareResult compareSignatures(Signature s1, Signature s2)
 	{
-		// TODO
-		return true;
+		CompareResult res = new CompareResult();
+		LocalFeatureVector v1 = FeatureExtractor.extractLocalFeature(s1);
+		LocalFeatureVector v2 = FeatureExtractor.extractLocalFeature(s2);
+
+		res.distance = 0;
+		res.decision = true;
+
+		return res;
+	}
+
+	/**
+	 * Compare a list of signature and store the results
+	 * @param inputfile A file containing on each line two signature paths to compare.
+	 * @param outputfile The file in which we store the comparison results
+	 */
+	public void compareSignaturesFromFile(String inputfile, String outputfile)
+	{
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(inputfile));
+			File output = new File(outputfile);
+			FileWriter writer = new FileWriter(output);
+
+			String line;
+			while ((line = br.readLine()) != null) {
+				String[] tokens = line.split(" ");
+				if (tokens.length != 2) {
+					System.err.println("Malformed input file.");
+					return;
+				}
+
+				// Create signatures
+				Signature s1 = new Signature(tokens[0]);
+				Signature s2 = new Signature(tokens[1]);
+
+				// Preprocess signatures
+				Preprocessor.normalizeAndReduce(s1);
+				Preprocessor.normalizeAndReduce(s2);
+
+				// Compare signatures
+				CompareResult res = compareSignatures(s1, s2);
+
+				// Write result
+				writer.write(line + " " + res.distance + " " + res.getDecision() + System.getProperty("line.separator"));
+			}
+
+			br.close();
+			writer.close();
+
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (SignatureException e) {
+			e.printStackTrace();
+		}
+
 	}
 
 	private ArrayList<LabeledSignature> parseDatabaseFile(String filename)
@@ -130,7 +194,7 @@ public class SignatureSystem {
 							continue;
 						}
 
-						boolean result = compareSignatures(s1, s2);
+						boolean result = compareSignatures(s1, s2).decision;
 						boolean realResult = (s1.getUserID() == s2.getUserID()) && (s1.isGenuine() && s2.isGenuine());
 						if (result == realResult) {
 							numberOfSuccess++;
@@ -156,10 +220,5 @@ public class SignatureSystem {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-	}
-
-	public void compareSignaturesFromFile(String inputfile, String outputfile)
-	{
-
 	}
 }
