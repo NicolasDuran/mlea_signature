@@ -12,6 +12,7 @@ import common.LabeledSignature;
 import common.Signature;
 import common.SignatureException;
 
+import distance.DTW_naive;
 import features.FeatureExtractor;
 import features.LocalFeatureVector;
 
@@ -39,7 +40,7 @@ public class SignatureSystem
 		LocalFeatureVector v1 = FeatureExtractor.extractLocalFeature(s1);
 		LocalFeatureVector v2 = FeatureExtractor.extractLocalFeature(s2);
 
-		res.distance = 0;
+		res.distance = DTW_naive.DTWDistance(v1, v2);
 		res.decision = true;
 
 		return res;
