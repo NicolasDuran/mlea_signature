@@ -156,39 +156,16 @@ public class PCA
 		return newCoords;
 	}
 
+	// PCA Exemple
 	public static void main(String[] args)
 	{
 		ArrayList<ArrayList<Double>> samples = new ArrayList<ArrayList<Double>>();
-		ArrayList<Double> sample1 = new ArrayList<Double>();
-		ArrayList<Double> sample2 = new ArrayList<Double>();
-		ArrayList<Double> sample3 = new ArrayList<Double>();
-		ArrayList<Double> sample4 = new ArrayList<Double>();
-		ArrayList<Double> sample5 = new ArrayList<Double>();
-		ArrayList<Double> sample6 = new ArrayList<Double>();
-
-		sample1.add(8.0);
-		sample1.add(1.0);
-		sample1.add(0.0);
-
-		sample2.add(4.0);
-		sample2.add(6.0);
-		sample2.add(5.0);
-
-		sample3.add(6.0);
-		sample3.add(8.0);
-		sample3.add(7.0);
-
-		sample4.add(10.0);
-		sample4.add(4.0);
-		sample4.add(7.0);
-
-		sample5.add(8.0);
-		sample5.add(2.0);
-		sample5.add(5.0);
-
-		sample6.add(0.0);
-		sample6.add(3.0);
-		sample6.add(6.0);
+		ArrayList<Double> sample1 = new ArrayList<Double>(Arrays.asList(8.0, 1.0, 0.0));
+		ArrayList<Double> sample2 = new ArrayList<Double>(Arrays.asList(4.0, 6.0, 5.0));
+		ArrayList<Double> sample3 = new ArrayList<Double>(Arrays.asList(6.0, 8.0, 7.0));
+		ArrayList<Double> sample4 = new ArrayList<Double>(Arrays.asList(10.0, 4.0, 7.0));
+		ArrayList<Double> sample5 = new ArrayList<Double>(Arrays.asList(8.0, 2.0, 5.0));
+		ArrayList<Double> sample6 = new ArrayList<Double>(Arrays.asList(0.0, 3.0, 6.0));
 
 		samples.add(sample1);
 		samples.add(sample2);
