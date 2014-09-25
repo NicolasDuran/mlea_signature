@@ -28,7 +28,7 @@ public class SignatureSystem
 	}
 
 	/**
-	 * Compares two preprocessed signatures
+	 * Compare two preprocessed signatures
 	 * @param s1 First signature
 	 * @param s2 Second signature
 	 * @return Returns the measured distance between those signature

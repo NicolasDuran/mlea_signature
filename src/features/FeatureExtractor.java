@@ -239,8 +239,9 @@ public class FeatureExtractor {
 		LocalFeatureVector features = computeLocalFeatures(s);
 		LocalFeatureVector v = new LocalFeatureVector();
 
-		v.add(features.get(LocalFeature.POS_X.index));
-		v.add(features.get(LocalFeature.POS_Y.index));
+		v.add(features.get(LocalFeature.POS_DX.index));
+		v.add(features.get(LocalFeature.POS_DY.index));
+		//v.add(features.get(LocalFeature.COS_ALPHA.index));
 
 		return v;
 	}
