@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
+import Plot.PlotChart;
+
 public class Classifier {
 
 	/**
@@ -157,6 +159,9 @@ public class Classifier {
 		Collections.shuffle(classB);
 
 		double threshold = Classifier.computeThreshold(classB, classA);
+
+		PlotChart.Plot(classA, classB, threshold);
+
 		System.out.println("Threshold = " + threshold);
 	}
 }
