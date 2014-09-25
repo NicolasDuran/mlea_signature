@@ -33,25 +33,27 @@ public class DTW_naive {
 	        DTW[0][i] = Double.MAX_VALUE;
 	    DTW[0][0] = 0;
 
-	    for (int i = 0; i < v1_size; i++)
-	    {
-	    	for (int j = 0; j < v2_size; j++)
+	    for (int i = 1; i <= v1_size; i++) {
+	    	for (int j = 1; j <= v2_size; j++)
 	    	{
 	    		double[] v1tab = new double[nbfeatures];
 	    		double[] v2tab = new double[nbfeatures];
 	    		for (int k = 0; k < nbfeatures; k++)
 	    		{
-	    			v1tab[k] = v1.get(k).get(i);
-	    			v2tab[k] = v2.get(k).get(j);
+	    			v1tab[k] = v1.get(k).get(i-1);
+	    			v2tab[k] = v2.get(k).get(j-1);
 	    		}
+
 	    		double dist = edc.compute(v1tab, v2tab);
+
 	            DTW[i][j] = dist + Math.min(
-		            		Math.min(DTW[i][j+1],     // insertion
-		            				 DTW[i+1][j]),    // deletion
-		            				 DTW[i][j]);  // match
+		            		Math.min(DTW[i-1][j], // insertion
+		            				 DTW[i][j-1]), // deletion
+		            				 DTW[i-1][j-1]); // match
 	    	}
 	    }
-	    return DTW[v1_size-1][v2_size-1];
+
+	    return DTW[v1_size][v2_size];
 	}
 
 }

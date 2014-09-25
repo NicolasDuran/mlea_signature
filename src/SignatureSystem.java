@@ -71,8 +71,10 @@ public class SignatureSystem
 				Signature s2 = new Signature(tokens[1]);
 
 				// Preprocess signatures
+				System.out.println("[BEFORE] S1 = " + s1.getPoints().size() + " points, S2 = " + s2.getPoints().size());
 				Preprocessor.normalizeAndReduce(s1);
 				Preprocessor.normalizeAndReduce(s2);
+				System.out.println("[AFTER] S1 = " + s1.getPoints().size() + " points, S2 = " + s2.getPoints().size());
 
 				// Compare signatures
 				CompareResult res = compareSignatures(s1, s2);
