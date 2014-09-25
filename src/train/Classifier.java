@@ -4,10 +4,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
-public class Trainer {
+public class Classifier {
 
+	/**
+	 * Find the optimal threshold with a dichotomic algorithm
+	 * @param leftClass The most left-located class
+	 * @param rightClass The most right-located class
+	 * @param lowerBound Lower bound of the dichotomic search
+	 * @param upperBound Upper bound of the dichotomic search
+	 * @return Optimal threshold
+	 */
 	private static double dichotomyComputeBestThreshold(ArrayList<Double> leftClass, ArrayList<Double> rightClass, double lowerBound, double upperBound)
 	{
+		System.out.println("=== Compute Optimal Threshold ===");
 		ArrayList<Double> leftClassBadPlaced = new ArrayList<Double>();
 		ArrayList<Double> rightClassBadPlaced = new ArrayList<Double>();
 		int numberOfSamples = leftClass.size() + rightClass.size();
@@ -23,7 +32,7 @@ public class Trainer {
 
 			// Compute threshold
 			threshold = lb + (ub - lb) / 2.0;
-			System.out.println("[" + i + "] : threshold = " + threshold);
+			System.out.print("[" + i + "] : threshold = " + threshold);
 
 			// Count well placed and bad placed samples
 			int wellPlaced = 0;
@@ -39,7 +48,8 @@ public class Trainer {
 			}
 
 			double wellPlacedPercent = 100.0 * wellPlaced / numberOfSamples;
-			System.out.println("[" + i + "] : " + "Well placed = " + wellPlacedPercent + "%");
+			System.out.print(", Well placed = " + wellPlacedPercent + "%");
+			System.out.println();
 
 			// We can't find better
 			if (leftClassBadPlaced.size() == rightClassBadPlaced.size()) {
@@ -54,6 +64,7 @@ public class Trainer {
 			i++;
 		}
 
+		System.out.println("=================================");
 		return threshold;
 	}
 
@@ -95,7 +106,6 @@ public class Trainer {
 			ArrayList<Double> c2_marge_samples = new ArrayList<Double>();
 			lowerBound = c2.get(0);
 			upperBound = c1.get(c1.size() - 1);
-			System.out.println("LowerBound = " + lowerBound + ", UpperBound = " + upperBound);
 
 			// Get all data that is mixed up, between lower and upper boundaries
 			for (Double v : c1) {
@@ -110,9 +120,29 @@ public class Trainer {
 			threshold = dichotomyComputeBestThreshold(c1_marge_samples, c2_marge_samples, lowerBound, upperBound);
 		}
 
+		printThresholdPerformances(c1, c2, threshold);
 		return threshold;
 	}
 
+	private static void printThresholdPerformances(ArrayList<Double> leftClass, ArrayList<Double> rightClass, double threshold)
+	{
+		int wellPlaced = 0;
+		for (Double v : leftClass) {
+			if (v <= threshold)
+				wellPlaced++;
+		}
+		for (Double v : rightClass) {
+			if (v >= threshold)
+				wellPlaced++;
+		}
+
+		double perfs = 100.0 * wellPlaced / (leftClass.size() + rightClass.size());
+		System.out.println("Threshold " + threshold + " performances : " + perfs + "%");
+	}
+
+	/**
+	 * Test method
+	 */
 	public static void main(String[] args)
 	{
 		ArrayList<Double> classA = new ArrayList<Double>(Arrays.asList(
@@ -126,7 +156,7 @@ public class Trainer {
 		Collections.shuffle(classA);
 		Collections.shuffle(classB);
 
-		double threshold = Trainer.computeThreshold(classB, classA);
+		double threshold = Classifier.computeThreshold(classB, classA);
 		System.out.println("Threshold = " + threshold);
 	}
 }
