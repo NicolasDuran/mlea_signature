@@ -46,20 +46,10 @@
         <property name="build.compiler" value="org.eclipse.jdt.core.JDTCompilerAdapter"/>
         <antcall target="build"/>
     </target>
-    <target name="FastMath">
-        <java classname="org.apache.commons.math3.util.FastMath" failonerror="true" fork="yes">
-            <arg line="sample/USER1_1.txt sample/USER1_10.txt"/>
-            <classpath refid="mlea_signature.classpath"/>
-        </java>
-    </target>
+
     <target name="Main">
         <java classname="Main" failonerror="true" fork="yes">
             <arg line="sample\compfile log\res.log"/>
-            <classpath refid="mlea_signature.classpath"/>
-        </java>
-    </target>
-    <target name="FastDtwTest">
-        <java classname="com.FastDtwTest" failonerror="true" fork="yes">
             <classpath refid="mlea_signature.classpath"/>
         </java>
     </target>
