@@ -11,12 +11,12 @@ public class DTW_naive {
 
 	public static double DTWDistance(LocalFeatureVector v1, LocalFeatureVector v2)
 	{
-		System.out.println("\n===== DTW =====");
+		//System.out.println("\n===== DTW =====");
 		if (v1 == null || v2 == null || v1.size() == 0|| v2.size() == 0)
 			return -1;
 
-		System.out.println("  Valeurs de ref FastDTW :");
-		DTW_compare.DTWDistance(v1, v2);
+		//System.out.println("  Valeurs de ref FastDTW :");
+		//DTW_compare.DTWDistance(v1, v2);
 		int nbfeatures = Math.min(v1.size(), v2.size());
 		int v1_size = v1.get(0).size();
 		int v2_size = v2.get(0).size();
@@ -55,8 +55,8 @@ public class DTW_naive {
 		            				 DTW[i-1][j-1]); // match
 	    	}
 	    }
-	    System.out.println("\n     DTW_NAIVE : " + DTW[v1_size][v2_size]);
-	    System.out.println("===============");
+	    //System.out.println("\n     DTW_NAIVE : " + DTW[v1_size][v2_size]);
+	    //System.out.println("===============");
 	    return DTW[v1_size][v2_size];
 	}
 
