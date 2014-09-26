@@ -18,7 +18,7 @@ public class Classifier {
 	 */
 	private static double dichotomyComputeBestThreshold(ArrayList<Double> leftClass, ArrayList<Double> rightClass, double lowerBound, double upperBound)
 	{
-		System.out.println("=== Compute Optimal Threshold ===");
+		//System.out.println("=== Compute Optimal Threshold ===");
 		ArrayList<Double> leftClassBadPlaced = new ArrayList<Double>();
 		ArrayList<Double> rightClassBadPlaced = new ArrayList<Double>();
 		int numberOfSamples = leftClass.size() + rightClass.size();
@@ -34,7 +34,7 @@ public class Classifier {
 
 			// Compute threshold
 			threshold = lb + (ub - lb) / 2.0;
-			System.out.print("[" + i + "] : threshold = " + threshold);
+			//System.out.print("[" + i + "] : threshold = " + threshold);
 
 			// Count well placed and bad placed samples
 			int wellPlaced = 0;
@@ -50,8 +50,8 @@ public class Classifier {
 			}
 
 			double wellPlacedPercent = 100.0 * wellPlaced / numberOfSamples;
-			System.out.print(", Well placed = " + wellPlacedPercent + "%");
-			System.out.println();
+			//System.out.print(", Well placed = " + wellPlacedPercent + "%");
+			//System.out.println();
 
 			// We can't find better
 			if (leftClassBadPlaced.size() == rightClassBadPlaced.size()) {
@@ -66,7 +66,7 @@ public class Classifier {
 			i++;
 		}
 
-		System.out.println("=================================");
+		//System.out.println("=================================");
 		return threshold;
 	}
 
@@ -122,11 +122,11 @@ public class Classifier {
 			threshold = dichotomyComputeBestThreshold(c1_marge_samples, c2_marge_samples, lowerBound, upperBound);
 		}
 
-		printThresholdPerformances(c1, c2, threshold);
+		measureThresholdPerformances(c1, c2, threshold);
 		return threshold;
 	}
 
-	private static void printThresholdPerformances(ArrayList<Double> leftClass, ArrayList<Double> rightClass, double threshold)
+	private static void measureThresholdPerformances(ArrayList<Double> leftClass, ArrayList<Double> rightClass, double threshold)
 	{
 		int wellPlaced = 0;
 		for (Double v : leftClass) {

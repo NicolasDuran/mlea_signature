@@ -8,7 +8,7 @@ public class Main
 		String usage = "Usage:\n" +
 				"\tinputfile outputfile : Compare signatures provided and store the results, using model file\n" +
 				"\t--train genuineDatabase forgeryDatabase : Train program and produce a model file.\n" +
-				"\t--perfs genuineDatabase forgeryDatabase : Measure program performances and store results in log/perfs.log file\n";
+				"\t--perfs signatureDatabase : Measure program performances and store results in log/perfs.log file\n";
 
 		if (args.length < 2) {
 			System.err.println(usage);
@@ -24,18 +24,18 @@ public class Main
 
 			// TODO ?
 		}
-		// Measure performances of the program by generate training and testing using cross-validation
+		// Measure performances of the program by generate several random training and testing
 		else if (args[0].equals("--perfs")) {
-			if (args.length < 3) {
+			if (args.length < 2) {
 				System.err.println(usage);
 				return;
 			}
 
-			syst.mesurePerformances(args[1], args[2]);
+			syst.measurePerformances(args[1]);
 		}
 		// Compare signatures provided in the given file, and write the result in the given output filename
 		else {
-			syst.compareSignaturesFromFile(args[0], args[1]);
+			syst.compareSignaturesFromFile(args[0], args[1], syst.forgeryThreshold, syst.identityThreshold);
 		}
 
 		return;

@@ -52,6 +52,6 @@ public class SpeedReducer {
 			}
 		}
 
-		System.out.println("Speed: " + nbCritical + " critical points found");
+		//System.out.println("Speed: " + nbCritical + " critical points found");
 	}
 }

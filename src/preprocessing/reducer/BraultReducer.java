@@ -44,7 +44,7 @@ public class BraultReducer {
 				nbCritical++;
 			}
 		}
-		System.out.println("Brault: " + nbCritical + " critical points founds");
+		//System.out.println("Brault: " + nbCritical + " critical points founds");
 	}
 
 	private void computeAngles(ArrayList<Point> points, int i, int n) {
