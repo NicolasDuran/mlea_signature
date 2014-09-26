@@ -43,6 +43,7 @@ public class SignatureSystem
 			FileWriter writer = new FileWriter(output);
 
 			double globalSuccess = 0.0;
+			double globalForgerySuccess = 0.0;
 
 			for (int i = 0; i < this.trainIteration; i++)
 			{
@@ -62,7 +63,8 @@ public class SignatureSystem
 				System.out.println("================ Test ================");
 
 				double success = 0.0;
-				int numberOfFactoryTests = 0;
+				double forgerySuccess = 0.0;
+				int numberOfForgeryTests = 0;
 				int numberOfIdentityTests = 0;
 
 				for (int j = 0; j < this.testSignatures.size(); j++) {
@@ -81,12 +83,14 @@ public class SignatureSystem
 							writer.write(" : dist = " + res.distance + " decision = " + res.getDecision() + " reality = " + realDecision + System.getProperty("line.separator"));
 
 							if (res.decision == realDecision) {
-								success += 1;
+								success += 1.0;
 							}
 
 							if (this.testSignatures.get(j).getUserID() == this.testSignatures.get(k).getUserID() &&
 								this.testSignatures.get(j).isGenuine() != this.testSignatures.get(k).isGenuine()) {
-								numberOfFactoryTests++;
+								if (res.decision == realDecision)
+									forgerySuccess += 1.0;
+								numberOfForgeryTests++;
 							}
 							else {
 								numberOfIdentityTests++;
@@ -95,17 +99,27 @@ public class SignatureSystem
 					}
 				}
 
-				success = 100.0 * success / (numberOfFactoryTests + numberOfIdentityTests);
+				success = 100.0 * success / (numberOfForgeryTests + numberOfIdentityTests);
+				forgerySuccess = 100.0 * forgerySuccess / numberOfForgeryTests;
 				globalSuccess += success;
+				globalForgerySuccess += forgerySuccess;
+
 				System.out.println("[" + i + "]: " + success + "% success over " +
-						numberOfFactoryTests + " forgery tests and " + numberOfIdentityTests + " identity tests.");
+						numberOfForgeryTests + " forgery tests and " + numberOfIdentityTests + " identity tests.");
+				System.out.println("     " + forgerySuccess + "% factory success");
+
+				// Writer log result
+				writer.write("=== Result ===" + System.getProperty("line.separator"));
 				writer.write("=== " + success + "% success ===" + System.getProperty("line.separator"));
+				writer.write("=== " + forgerySuccess + "% forgery success ===" + System.getProperty("line.separator"));
 			}
 
 			globalSuccess /= trainIteration;
+			globalForgerySuccess /= trainIteration;
 
 			System.out.println("=================================================");
 			System.out.println("[Performances]: " + globalSuccess + "% success");
+			System.out.println("                " + globalForgerySuccess + "% forgery success");
 
 			writer.close();
 

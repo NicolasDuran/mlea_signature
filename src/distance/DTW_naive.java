@@ -16,7 +16,7 @@ public class DTW_naive {
 			return -1;
 
 		//System.out.println("  Valeurs de ref FastDTW :");
-		//DTW_compare.DTWDistance(v1, v2);
+		//DDTW_compare.DTWDistance(v1, v2);
 		int nbfeatures = Math.min(v1.size(), v2.size());
 		int v1_size = v1.get(0).size();
 		int v2_size = v2.get(0).size();
