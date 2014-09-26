@@ -1,6 +1,8 @@
-package Plot;
+package plot;
+import java.awt.BasicStroke;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Shape;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
@@ -17,6 +19,7 @@ import org.jfree.chart.plot.XYPlot;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.XYSeriesCollection;
+import org.jfree.util.ShapeUtilities;
 
 
 public class PlotChart {
@@ -26,7 +29,7 @@ public class PlotChart {
 		XYSeriesCollection result = entry;
 	    XYSeries series = new XYSeries(name);
 	    for (int i = 0; i < tab.size(); i++) {
-	        series.add(tab.get(i),tab.get(i));
+	        series.add(tab.get(i), new Double(0));
 	    }
 	    result.addSeries(series);
 	    return result;
@@ -36,7 +39,9 @@ public class PlotChart {
 	{
 		XYSeriesCollection result = entry;
 	    XYSeries series = new XYSeries(name);
-	    series.add(seuil,seuil);
+	    series.add(seuil, new Double(-1));
+	    series.add(seuil, new Double(1));
+	    
 	    result.addSeries(series);
 	    return result;
 	}
@@ -81,7 +86,7 @@ public class PlotChart {
 		ImageIcon imageIcon1 = new ImageIcon(bImage1); 
 		label1.setIcon(imageIcon1); 
 
-		JFrame frame = new JFrame(" Graph"); 
+		JFrame frame = new JFrame("Graph"); 
 		frame.add(label1,BorderLayout.NORTH); 
 
 		frame.setSize(1000,700); 
@@ -123,21 +128,27 @@ public class PlotChart {
 		xyplot.setDataset(1, class2);
 		xyplot.setDataset(2, seuilset);
 		
-		chart.setBackgroundPaint(Color.white);
+		chart.setBackgroundPaint(Color.WHITE);
+		
+		Shape cross = ShapeUtilities.createDiagonalCross(2, 0);
+		
 		
 		XYLineAndShapeRenderer rr = new XYLineAndShapeRenderer(); 
 		rr.setSeriesLinesVisible(0, false); 
-		rr.setPaint(Color.GREEN); 
-		chart.getXYPlot().setRenderer(0,rr); 
+		rr.setPaint(Color.YELLOW); 
+		rr.setSeriesShape(0, cross);
+		chart.getXYPlot().setRenderer(0,rr);
+
 		
 		XYLineAndShapeRenderer rr2 = new XYLineAndShapeRenderer(); 
 		rr2.setSeriesLinesVisible(0, false);
 		rr2.setPaint(Color.BLUE); 
+		rr2.setSeriesShape(0, cross);
 		chart.getXYPlot().setRenderer(1,rr2); 
 		
 		
 		XYLineAndShapeRenderer rr3 = new XYLineAndShapeRenderer();
-		rr3.setSeriesLinesVisible(0, false); 
+		rr3.setSeriesLinesVisible(0, true); 
 		rr3.setPaint(Color.RED); 
 		chart.getXYPlot().setRenderer(2,rr3);
 		

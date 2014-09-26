@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 
-import Plot.PlotChart;
+import plot.PlotChart;
 
 public class Classifier {
 
