@@ -1,6 +1,7 @@
 <project basedir="." default="build" name="mlea_signature">
     <property environment="env"/>
     <property name="debuglevel" value="source,lines,vars"/>
+    <property name="main-class" value="Main"/>
 
     <path id="mlea_signature.classpath">
         <pathelement location="bin"/>
@@ -29,9 +30,15 @@
             <classpath refid="mlea_signature.classpath"/>
         </javac>
     </target>
+
     <target depends="build-project" name="jar">
-		<jar destfile="compSign.jar" basedir="."/>
+		<jar destfile="compSign.jar" basedir="bin/">
+            <manifest>
+                <attribute name="Main-Class" value="${main-class}"/>
+            </manifest>
+        </jar>
     </target>
+
     <target description="Build all projects which reference this project. Useful to propagate changes." name="build-refprojects"/>
     <target description="copy Eclipse compiler jars to ant lib directory" name="init-eclipse-compiler">
         <copy todir="${ant.library.dir}">

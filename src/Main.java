@@ -30,7 +30,8 @@ public class Main
 		}
 		// Compare signatures provided in the given file, and write the result in the given output filename
 		else {
-			syst.compareSignaturesFromFile(args[0], args[1], syst.forgeryThreshold, syst.identityThreshold);
+			syst.forgeryThreshold = 389.64616403731014;
+			syst.compareSignaturesFromFile(args[0], args[1]);
 		}
 
 		return;

@@ -332,7 +332,7 @@ public class SignatureSystem
 	 * @param inputfile A file containing on each line two signature paths to compare.
 	 * @param outputfile The file in which we store the comparison results
 	 */
-	public void compareSignaturesFromFile(String inputfile, String outputfile, double localThreshold, double globalThreshold)
+	public void compareSignaturesFromFile(String inputfile, String outputfile)
 	{
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(inputfile));
@@ -356,7 +356,7 @@ public class SignatureSystem
 				Preprocessor.normalizeAndReduce(s2);
 
 				// Compare signatures
-				CompareResult res = compareSignatures(s1, s2, localThreshold, globalThreshold);
+				CompareResult res = compareSignatures(s1, s2, this.forgeryThreshold, this.identityThreshold);
 
 				// Write result
 				writer.write(line + " " + res.distance + " " + res.getDecision() + System.getProperty("line.separator"));
