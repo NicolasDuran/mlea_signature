@@ -11,7 +11,10 @@
     </path>
     <target name="init">
         <mkdir dir="bin"/>
-        <copy includeemptydirs="false" todir="bin">
+   	<manifestclasspath property="manifest_cp" jarfile="compSign.jar">
+        <classpath refid="mlea_signature.classpath" />
+    	</manifestclasspath>
+	<copy includeemptydirs="false" todir="bin">
             <fileset dir="src">
                 <exclude name="**/*.java"/>
             </fileset>
@@ -34,7 +37,8 @@
     <target depends="build-project" name="jar">
 		<jar destfile="compSign.jar" basedir="bin/">
             <manifest>
-                <attribute name="Main-Class" value="${main-class}"/>
+                <attribute name="Main-Class" value="Main"/>
+		<attribute name="Class-Path" value="${manifest_cp}"/>
             </manifest>
         </jar>
     </target>
