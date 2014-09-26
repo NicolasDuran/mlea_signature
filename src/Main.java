@@ -17,12 +17,7 @@ public class Main
 
 		// Train program and produce a model file for further testing
 		if (args[0].equals("--train ")) {
-			if (args.length < 3) {
-				System.err.println(usage);
-				return;
-			}
-
-			// TODO ?
+			// TODO
 		}
 		// Measure performances of the program by generate several random training and testing
 		else if (args[0].equals("--perfs")) {
