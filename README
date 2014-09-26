@@ -102,6 +102,7 @@ Features :
 			   features n'ont pas toujours les même dimensions, soit il faut créer des vecteurs avec que des
 			   features de même dimensions et puis lancer plusieurs DTW, et faire par exemple la somme des distances
 			   obtenues (ou une distance euclidienne ...) ...
+			   Le nombre de points pour chaque feature locale est mit en commentaire dans l'enum LocalFeature
 
 	/!\ A l'heure actuelle les globales features ne sont pas utilisées lors de la comparaison, donc ça sert à rien
 		de les tester pour l'instant.
