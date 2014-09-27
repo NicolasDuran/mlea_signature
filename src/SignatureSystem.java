@@ -16,8 +16,9 @@ import common.LabeledSignature;
 import common.Signature;
 import common.SignatureException;
 
-import distance.DTWNaive;
+import distance.Comparator;
 import features.FeatureExtractor;
+import features.GlobalFeatureVector;
 import features.LocalFeatureVector;
 
 
@@ -52,6 +53,7 @@ public class SignatureSystem
 			double globalSuccess = 0.0;
 			double globalForgerySuccess = 0.0;
 			double globalIdentitySuccess = 0.0;
+			double globalIntraSuccess = 0.0;
 			double thresholdMean = 0.0;
 
 			for (int i = 0; i < this.trainIteration; i++)
@@ -77,8 +79,10 @@ public class SignatureSystem
 				double success = 0.0;
 				double forgerySuccess = 0.0;
 				double identitySuccess = 0.0;
+				double intraSuccess = 0.0;
 				int numberOfForgeryTests = 0;
 				int numberOfIdentityTests = 0;
+				int numberOfIntraTests = 0;
 
 				for (int j = 0; j < this.testSignatures.size(); j++) {
 					for (int k = j + 1; k < this.testSignatures.size(); k++) {
@@ -100,6 +104,7 @@ public class SignatureSystem
 							writer.write(" - " + this.testSignatures.get(k).getName() + (this.testSignatures.get(k).isGenuine() ? " (genuine)" : " (forgery)"));
 							writer.write(" : dist = " + res.distance + ", decision = " + res.decision + ", reality = " + realDecision + System.getProperty("line.separator"));
 
+							// Count success
 							if (res.decision == realDecision) {
 								success += 1.0;
 							}
@@ -111,11 +116,22 @@ public class SignatureSystem
 									forgerySuccess += 1.0;
 								numberOfForgeryTests++;
 							}
-							else {
+
+							if (this.testSignatures.get(j).getUserID() == this.testSignatures.get(k).getUserID() &&
+								this.testSignatures.get(j).isGenuine() == this.testSignatures.get(k).isGenuine()) {
+								if (res.decision == realDecision)
+									intraSuccess += 1.0;
+								numberOfIntraTests++;
+							}
+
+							if (this.testSignatures.get(j).getUserID() != this.testSignatures.get(k).getUserID() ||
+								this.testSignatures.get(j).isGenuine() == this.testSignatures.get(k).isGenuine())
+							{
 								if (res.decision == realDecision)
 									identitySuccess += 1.0;
 								numberOfIdentityTests++;
 							}
+
 						}
 					}
 				}
@@ -123,32 +139,39 @@ public class SignatureSystem
 				success = 100.0 * success / (numberOfForgeryTests + numberOfIdentityTests);
 				forgerySuccess = 100.0 * forgerySuccess / numberOfForgeryTests;
 				identitySuccess = 100.0 * identitySuccess / numberOfIdentityTests;
+				intraSuccess = 100.0 * intraSuccess / numberOfIntraTests;
+
 				globalSuccess += success;
 				globalForgerySuccess += forgerySuccess;
 				globalIdentitySuccess += identitySuccess;
+				globalIntraSuccess += intraSuccess;
 
 				System.out.println("[" + i + "]: " + success + "% success over " +
 						numberOfForgeryTests + " forgery tests and " + numberOfIdentityTests + " identity tests.");
-				System.out.println("     " + forgerySuccess + "% factory success");
-				System.out.println("     " + identitySuccess + "% identity success");
+				System.out.println("     \t" + forgerySuccess + "% forgery success");
+				System.out.println("     \t" + identitySuccess + "% identity success");
+				System.out.println("     \t\t" + intraSuccess + "% intra success");
 
 				// Writer log result
 				writer.write("=== Result ===" + System.getProperty("line.separator"));
 				writer.write("=== " + success + "% success ===" + System.getProperty("line.separator"));
 				writer.write("=== " + forgerySuccess + "% forgery success ===" + System.getProperty("line.separator"));
 				writer.write("=== " + identitySuccess + "% identity success ===" + System.getProperty("line.separator"));
+				writer.write("=== " + intraSuccess + "% intra success ===" + System.getProperty("line.separator"));
 			}
 
 			thresholdMean /= trainIteration;
 			globalSuccess /= trainIteration;
 			globalForgerySuccess /= trainIteration;
 			globalIdentitySuccess /= trainIteration;
+			globalIntraSuccess /= trainIteration;
 
 			System.out.println("=================================================");
 			System.out.println("[Threshold]: " + thresholdMean);
 			System.out.println("[Performances]: " + globalSuccess + "% success");
-			System.out.println("                " + globalForgerySuccess + "% forgery success");
-			System.out.println("                " + globalIdentitySuccess + "% identity success");
+			System.out.println("                \t" + globalForgerySuccess + "% forgery success");
+			System.out.println("                \t" + globalIdentitySuccess + "% identity success");
+			System.out.println("                \t\t" + globalIntraSuccess + "% intra success");
 
 			writer.close();
 
@@ -333,11 +356,15 @@ public class SignatureSystem
 	 */
 	public double compareSignatures(Signature s1, Signature s2)
 	{
-		LocalFeatureVector v1 = FeatureExtractor.extractLocalFeature(s1);
-		LocalFeatureVector v2 = FeatureExtractor.extractLocalFeature(s2);
+		LocalFeatureVector lv1 = FeatureExtractor.extractLocalFeature(s1);
+		GlobalFeatureVector gv1 = FeatureExtractor.extractGlobalFeature(s1);
+		LocalFeatureVector lv2 = FeatureExtractor.extractLocalFeature(s2);
+		GlobalFeatureVector gv2 = FeatureExtractor.extractGlobalFeature(s2);
 
-		double distance = DTWNaive.DTWDistance(v1, v2);
-		return distance;
+		double localDistance = Comparator.DTW(lv1, lv2);
+		double globalDistance = Comparator.compareGlobalFeature(gv1, gv2);
+
+		return  localDistance;
 	}
 
 	/**
@@ -352,10 +379,7 @@ public class SignatureSystem
 	public CompareResult compareSignatures(Signature s1, Signature s2, double localThreshold, double globalThreshold)
 	{
 		CompareResult res = new CompareResult();
-		LocalFeatureVector v1 = FeatureExtractor.extractLocalFeature(s1);
-		LocalFeatureVector v2 = FeatureExtractor.extractLocalFeature(s2);
-
-		res.distance = DTWNaive.DTWDistance(v1, v2);
+		res.distance = compareSignatures(s1, s2);
 		res.decision = res.distance < localThreshold;
 
 		return res;

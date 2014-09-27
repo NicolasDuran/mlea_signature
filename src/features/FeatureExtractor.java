@@ -261,7 +261,9 @@ public class FeatureExtractor {
 
 		v.add(features.get(GlobalFeature.TOTAL_LENGTH.index));
 		v.add(features.get(GlobalFeature.DURATION.index));
-		v.add(features.get(GlobalFeature.START_END_DISTANCE.index));
+		//v.add(features.get(GlobalFeature.START_END_DISTANCE.index));
+		v.add(features.get(GlobalFeature.ANGLE_SUM.index));
+		v.add(features.get(GlobalFeature.XY_RELATION.index));
 
 		return v;
 	}

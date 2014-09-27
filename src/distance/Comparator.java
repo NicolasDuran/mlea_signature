@@ -2,14 +2,14 @@ package distance;
 
 import org.apache.commons.math3.ml.distance.EuclideanDistance;
 
+import features.GlobalFeatureVector;
 import features.LocalFeatureVector;
 
+public class Comparator {
 
-//Based on pseudo code found here :
-//http://en.wikipedia.org/w/index.php?title=Dynamic_time_warping&oldid=623046081
-public class DTWNaive {
-
-	public static double DTWDistance(LocalFeatureVector v1, LocalFeatureVector v2)
+	//Based on pseudo code found here :
+	//http://en.wikipedia.org/w/index.php?title=Dynamic_time_warping&oldid=623046081
+	public static double DTW(LocalFeatureVector v1, LocalFeatureVector v2)
 	{
 		//System.out.println("\n===== DTW =====");
 
@@ -59,6 +59,18 @@ public class DTWNaive {
 	    //System.out.println("===============");
 
 	    return DTW[v1_size][v2_size];
+	}
+
+	public static double compareGlobalFeature(GlobalFeatureVector v1, GlobalFeatureVector v2)
+	{
+		int size = Math.min(v1.size(), v2.size()); // just in case
+		double dist = 0.0;
+
+		for (int i = 0; i < size; i++) {
+			dist += Math.pow(v1.get(i) - v2.get(i), 2);
+		}
+
+		return Math.sqrt(dist);
 	}
 
 }
