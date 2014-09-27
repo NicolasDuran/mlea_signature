@@ -18,6 +18,10 @@ public class Point {
 	private boolean isCritical;
 	private double angle;
 
+	public static boolean samePosition(Point p1, Point p2) {
+		return p1.x == p2.x && p1.y == p2.y;
+	}
+
 	public Point(double x, double y, long time, boolean button, int azimuth,
 			int altitude, int pressure) {
 		super();
@@ -82,8 +86,16 @@ public class Point {
 		this.angle = angle;
 	}
 
+	public void setButton(boolean isButton) {
+		this.button = isButton;
+	}
+
 	public void setCritical(boolean isCritical) {
 		this.isCritical = isCritical;
+	}
+
+	public void setTime(long time) {
+		this.time = time;
 	}
 
 	public void setX(double x) {

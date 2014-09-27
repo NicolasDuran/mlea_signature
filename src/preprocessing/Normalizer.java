@@ -1,11 +1,14 @@
 package preprocessing;
 
+import java.util.ArrayList;
+
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 import common.Point;
 import common.Signature;
 
 public class Normalizer {
+	private int n;
 
 	/**
 	 * Compute main signature specifications for debugging.
@@ -14,7 +17,6 @@ public class Normalizer {
 	 * and the mean values.
 	 */
 	private String infos(Signature signature) {
-		int n = signature.getPoints().size();
 		double meanX = 0;
 		double meanY = 0;
 		double minX = Double.MAX_VALUE;
@@ -43,14 +45,34 @@ public class Normalizer {
 				+ "maxY=" + maxY + "}";
 	}
 
+	public void deleteDouble(Signature signature) {
+		ArrayList<Point> points = signature.getPoints();
+		ArrayList<Point> newPoints = new ArrayList<Point>();
+		for (int i = 0; i < n - 1; i++) {
+			if (Point.samePosition(points.get(i), points.get(i + 1))) {
+				if (!points.get(i).isButton()) {
+					points.get(i + 1).setButton(false);
+				} else {
+					points.get(i + 1).setTime((points.get(i).getTime() + points.get(i + 1).getTime()) / 2);
+				}
+			} else {
+				newPoints.add(points.get(i));
+			}
+		}
+		newPoints.add(points.get(n - 1));
+		signature.setPoints(newPoints);
+	}
+
 	/**
 	 * Normalize the signature using rotation, homothetie and translation.
 	 * Also reduce the number of points by keeping speed local minimum.
 	 * @param signature The signature to normalize.
 	 */
 	public void normalize(Signature signature) {
+		n = signature.getPoints().size();
+		deleteDouble(signature);
 		rotate(signature);
-		resize(signature, 100);
+		resize(signature, 1);
 		translateToCenter(signature);
 	}
 

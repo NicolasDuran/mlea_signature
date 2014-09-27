@@ -153,4 +153,8 @@ public class Signature
 
 		return builder.toString();
 	}
+
+	public void setPoints(ArrayList<Point> newPoints) {
+		this.points = newPoints;
+	}
 }
