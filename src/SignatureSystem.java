@@ -72,9 +72,6 @@ public class SignatureSystem
 			double globalIntraSuccess = 0.0;
 			double thresholdMean = 0.0;
 
-			// Compute PCA vectors
-			pca_vectors = applyPCA(database);
-
 			for (int i = 0; i < this.trainIteration; i++)
 			{
 				writer.write("=== Iteration " + i + " ===" + System.getProperty("line.separator"));
