@@ -160,7 +160,7 @@ public class Classifier {
 
 		double threshold = Classifier.computeThreshold(classB, classA);
 
-		PlotChart.Plot(classA, classB, threshold);
+		PlotChart.Plot("Test", classA, classB, threshold);
 
 		System.out.println("Threshold = " + threshold);
 	}

@@ -15,6 +15,10 @@ Usage :
 	--train : Pas encore implémenté !
 	--perfs database : Mesure les performances de notre système à partir de la base de données fournie.
 					   Utilisez par défaut sample/signatures, qui contient l'ensemble des signatures fournis par Réda.
+	--plotperfs database : Pareil que --perfs, mais plot en plus pour chaque user les deux classes de distances ainsi
+						   que le seuil. Ceci permet de visualiser à quel point les caractéristiques choisies permettent
+						   de séparer les données. Je conseille fortement de mettre l'attribut trainIteration de la classe
+						   SignatureSysyem à 1 pour pas avoir trop de graphique ! (1 par user par itération)
 
 -----------
 Vocabulaire

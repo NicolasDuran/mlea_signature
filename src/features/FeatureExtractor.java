@@ -1,6 +1,7 @@
 package features;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import common.Point;
 import common.Signature;
@@ -203,7 +204,7 @@ public class FeatureExtractor {
 					sina = Math.abs(dy) / Math.sqrt(dx * dx + dy * dy);
 				}
 				else {
-					System.err.println("[" + i + "][" + (i+1) + "] same points !");
+					//System.err.println("[" + i + "][" + (i+1) + "] same points !");
 				}
 
 				alphacos.add(cosa);
@@ -270,11 +271,26 @@ public class FeatureExtractor {
 		LocalFeatureVector features = computeLocalFeatures(s);
 		LocalFeatureVector v = new LocalFeatureVector();
 
-		v.add(features.get(LocalFeature.POS_DX.index));
-		v.add(features.get(LocalFeature.POS_DY.index));
-		//v.add(features.get(LocalFeature.COS_ALPHA.index));
-		//v.add(features.get(LocalFeature.SIN_ALPHA.index));
+		v.add(features.get(LocalFeature.POS_X.index));
+		v.add(features.get(LocalFeature.POS_Y.index));
+		v.add(features.get(LocalFeature.SIN_ALPHA.index));
+		//v.add(features.get(LocalFeature.CURVATURE.index));
+		//v.add(features.get(LocalFeature.PRESSURE.index));
+		//v.add(features.get(LocalFeature.AX.index));
+		//v.add(features.get(LocalFeature.AY.index));
+
+		normalize(v);
 
 		return v;
+	}
+
+	public static void normalize(LocalFeatureVector v)
+	{
+		for (ArrayList<Double> f : v) {
+			double max = Collections.max(f);
+			for (int i = 0; i < f.size(); i++) {
+				f.set(i, f.get(i) / max);
+			}
+		}
 	}
 }

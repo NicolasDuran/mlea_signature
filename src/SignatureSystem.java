@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 
+import plot.PlotChart;
 import preprocessing.Preprocessor;
 import train.Classifier;
 
@@ -23,14 +24,20 @@ import features.LocalFeatureVector;
 public class SignatureSystem
 {
 	final int numberOfUsers = 5;
-	final int trainIteration = 3;
+	final int trainIteration = 1;
 
 	double forgeryThreshold;
 	double identityThreshold;
 
+	boolean plotMode;
+
 	private ArrayList<ArrayList<LabeledSignature>> userGenuineTrainSignatures;
 	private ArrayList<ArrayList<LabeledSignature>> userForgeryTrainSignatures;
 	private ArrayList<LabeledSignature> testSignatures;
+
+	public SignatureSystem() {
+		plotMode = false;
+	}
 
 	/**
 	 * Train the program and measure performances
@@ -294,6 +301,11 @@ public class SignatureSystem
 		}
 
 		double threshold = Classifier.computeThreshold(intraDistances, extraDistances);
+
+		if (plotMode) {
+			PlotChart.Plot("User " + userTrain.get(0).getUserID(), intraDistances, extraDistances, threshold);
+		}
+
 		return threshold;
 	}
 

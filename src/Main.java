@@ -28,6 +28,16 @@ public class Main
 
 			syst.measurePerformances(args[1]);
 		}
+		// Measure performances of the program by generate several random training and testing and plot distance classes
+		else if (args[0].equals("--plotperfs")) {
+			if (args.length < 2) {
+				System.err.println(usage);
+				return;
+			}
+
+			syst.plotMode = true;
+			syst.measurePerformances(args[1]);
+		}
 		// Compare signatures provided in the given file, and write the result in the given output filename
 		else {
 			syst.forgeryThreshold = 389.64616403731014;
