@@ -7,11 +7,12 @@ import features.LocalFeatureVector;
 
 //Based on pseudo code found here :
 //http://en.wikipedia.org/w/index.php?title=Dynamic_time_warping&oldid=623046081
-public class DTW_naive {
+public class DTWNaive {
 
 	public static double DTWDistance(LocalFeatureVector v1, LocalFeatureVector v2)
 	{
 		//System.out.println("\n===== DTW =====");
+
 		if (v1 == null || v2 == null || v1.size() == 0|| v2.size() == 0)
 			return -1;
 
@@ -20,7 +21,7 @@ public class DTW_naive {
 		int v2_size = v2.get(0).size();
 		EuclideanDistance edc = new EuclideanDistance();
 
-		//Not needed ?
+		// In case features have not the same number of points
 		for (int i = 1; i < nbfeatures; i++)
 			v1_size = Math.min(v1_size, v1.get(i).size());
 		for (int i = 1; i < nbfeatures; i++)
@@ -53,8 +54,10 @@ public class DTW_naive {
 		            				 DTW[i-1][j-1]); // match
 	    	}
 	    }
+
 	    //System.out.println("\n     DTW_NAIVE : " + DTW[v1_size][v2_size]);
 	    //System.out.println("===============");
+
 	    return DTW[v1_size][v2_size];
 	}
 
