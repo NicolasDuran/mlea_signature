@@ -12,18 +12,25 @@ public class SpeedReducer {
 	 * @param signature The signature to reduce.
 	 */
 	public void apply(Signature signature) {
-		int n = signature.getPoints().size();
+		ArrayList<Point> points = signature.getPoints();
+		int n = points.size();
+
 
 		/* Compute speed for each points except first and last one */
-		ArrayList<Point> points = signature.getPoints();
 		ArrayList<Double> speeds = new ArrayList<Double>();
 		speeds.add(0.); // Add first speed to maintain indexes
 
 		for (int i = 1; i < n - 1; i++) {
-			double distance = Point.distance(points.get(i - 1), points.get(i))
-					+ Point.distance(points.get(i), points.get(i + 1));
-			double time = points.get(i).getTime() - points.get(i - 1).getTime()
-					+ points.get(i + 1).getTime() - points.get(i).getTime();
+			double distance = 0.;
+			double time = 0.;
+			if (points.get(i).isButton()) {
+				distance += Point.distance(points.get(i - 1), points.get(i));
+				time += points.get(i).getTime() - points.get(i - 1).getTime();
+			}
+			if (points.get(i + 1).isButton()) {
+				distance += Point.distance(points.get(i), points.get(i + 1));
+				time += points.get(i + 1).getTime() - points.get(i).getTime();
+			}
 
 			speeds.add(distance / time);
 		}
@@ -31,8 +38,6 @@ public class SpeedReducer {
 		// Add last
 		speeds.add(Point.distance(points.get(n - 2), points.get(n - 1))
 				/ points.get(n - 1).getTime() - points.get(n - 2).getTime());
-
-		int nbCritical = 0;
 
 		boolean incr = false;
 		for (int i = 1; i < n - 1; i++) {
@@ -44,14 +49,11 @@ public class SpeedReducer {
 			else if (!incr){
 				incr = true;
 				signature.getPoints().get(i).setCritical(true);
-				nbCritical++;
 			}
 			// Keep increasing
 			else {
 				// Do nothing
 			}
 		}
-
-		//System.out.println("Speed: " + nbCritical + " critical points found");
 	}
 }
