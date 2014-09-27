@@ -24,7 +24,7 @@ import features.LocalFeatureVector;
 public class SignatureSystem
 {
 	final int numberOfUsers = 5;
-	final int trainIteration = 1;
+	final int trainIteration = 3;
 
 	double forgeryThreshold;
 	double identityThreshold;
@@ -51,6 +51,8 @@ public class SignatureSystem
 
 			double globalSuccess = 0.0;
 			double globalForgerySuccess = 0.0;
+			double globalIdentitySuccess = 0.0;
+			double thresholdMean = 0.0;
 
 			for (int i = 0; i < this.trainIteration; i++)
 			{
@@ -60,10 +62,13 @@ public class SignatureSystem
 				System.out.println("================ Train ================");
 				chooseTrainAndTestSignatures(database);
 				this.forgeryThreshold = trainUnversalForgeryThreshold();
-				//this.identityThreshold = trainUnversalIdentityThreshold();
+				thresholdMean += this.forgeryThreshold;
+
 				writer.write("Chosen LocalThreshold : " + this.forgeryThreshold + System.getProperty("line.separator"));
-				//writer.write("GlobalThreshold : " + this.identityThreshold + System.getProperty("line.separator"));
 				System.out.println("Chosen LocalThreshold : " + this.forgeryThreshold);
+
+				//this.identityThreshold = trainUnversalIdentityThreshold();
+				//writer.write("GlobalThreshold : " + this.identityThreshold + System.getProperty("line.separator"));
 				//System.out.println("GlobalThreshold : " + this.identityThreshold);
 
 				// Test
@@ -71,6 +76,7 @@ public class SignatureSystem
 
 				double success = 0.0;
 				double forgerySuccess = 0.0;
+				double identitySuccess = 0.0;
 				int numberOfForgeryTests = 0;
 				int numberOfIdentityTests = 0;
 
@@ -106,6 +112,8 @@ public class SignatureSystem
 								numberOfForgeryTests++;
 							}
 							else {
+								if (res.decision == realDecision)
+									identitySuccess += 1.0;
 								numberOfIdentityTests++;
 							}
 						}
@@ -114,25 +122,33 @@ public class SignatureSystem
 
 				success = 100.0 * success / (numberOfForgeryTests + numberOfIdentityTests);
 				forgerySuccess = 100.0 * forgerySuccess / numberOfForgeryTests;
+				identitySuccess = 100.0 * identitySuccess / numberOfIdentityTests;
 				globalSuccess += success;
 				globalForgerySuccess += forgerySuccess;
+				globalIdentitySuccess += identitySuccess;
 
 				System.out.println("[" + i + "]: " + success + "% success over " +
 						numberOfForgeryTests + " forgery tests and " + numberOfIdentityTests + " identity tests.");
 				System.out.println("     " + forgerySuccess + "% factory success");
+				System.out.println("     " + identitySuccess + "% identity success");
 
 				// Writer log result
 				writer.write("=== Result ===" + System.getProperty("line.separator"));
 				writer.write("=== " + success + "% success ===" + System.getProperty("line.separator"));
 				writer.write("=== " + forgerySuccess + "% forgery success ===" + System.getProperty("line.separator"));
+				writer.write("=== " + identitySuccess + "% identity success ===" + System.getProperty("line.separator"));
 			}
 
+			thresholdMean /= trainIteration;
 			globalSuccess /= trainIteration;
 			globalForgerySuccess /= trainIteration;
+			globalIdentitySuccess /= trainIteration;
 
 			System.out.println("=================================================");
+			System.out.println("[Threshold]: " + thresholdMean);
 			System.out.println("[Performances]: " + globalSuccess + "% success");
 			System.out.println("                " + globalForgerySuccess + "% forgery success");
+			System.out.println("                " + globalIdentitySuccess + "% identity success");
 
 			writer.close();
 

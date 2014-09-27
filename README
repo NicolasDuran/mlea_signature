@@ -33,9 +33,9 @@ Juste pour qu'on soit tous sur la même longueur d'onde (et parce que j'utilise 
 					 signature contrefaite (imitée) de ce même user. Le taux de réussite sur les forgery tests sont les plus
 					 bas à l'heure actuelle.
 
------------------------
+------------------------
 Mesurer les performances
------------------------
+------------------------
 
 L'option --perfs permet de mesurer les performances du programme. Que fait-elle exactement ?
 Il s'agit d'un processus itératif qui va s'exécuter plusieurs fois avec à chaque itération des
