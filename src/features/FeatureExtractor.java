@@ -245,5 +245,4 @@ public class FeatureExtractor {
 
 		return v;
 	}
-
 }

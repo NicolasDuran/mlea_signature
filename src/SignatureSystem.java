@@ -23,7 +23,7 @@ import features.LocalFeatureVector;
 public class SignatureSystem
 {
 	final int numberOfUsers = 5;
-	final int trainIteration = 5;
+	final int trainIteration = 1;
 
 	double forgeryThreshold;
 	double identityThreshold;
@@ -69,7 +69,12 @@ public class SignatureSystem
 
 				for (int j = 0; j < this.testSignatures.size(); j++) {
 					for (int k = j + 1; k < this.testSignatures.size(); k++) {
-						if (j != k) {
+						if (j != k)
+						{
+							// Don't compare forgery with forgery
+							if (!this.testSignatures.get(j).isGenuine() && !this.testSignatures.get(k).isGenuine())
+								continue;
+
 							// Same user = same ID + genuine
 							boolean realDecision = this.testSignatures.get(j).getUserID() == this.testSignatures.get(k).getUserID() &&
 									this.testSignatures.get(j).isGenuine() == this.testSignatures.get(k).isGenuine();
@@ -78,16 +83,17 @@ public class SignatureSystem
 																this.forgeryThreshold, this.identityThreshold);
 
 							// Write log
-							writer.write("USER " + this.testSignatures.get(j).getUserID() + (this.testSignatures.get(j).isGenuine() ? " genuine" : " forgery"));
-							writer.write(" - USER " + this.testSignatures.get(k).getUserID() + (this.testSignatures.get(k).isGenuine() ? " genuine" : " forgery"));
-							writer.write(" : dist = " + res.distance + " decision = " + res.getDecision() + " reality = " + realDecision + System.getProperty("line.separator"));
+							writer.write(this.testSignatures.get(j).getName() + (this.testSignatures.get(j).isGenuine() ? " (genuine)" : " (forgery)"));
+							writer.write(" - " + this.testSignatures.get(k).getName() + (this.testSignatures.get(k).isGenuine() ? " (genuine)" : " (forgery)"));
+							writer.write(" : dist = " + res.distance + ", decision = " + res.decision + ", reality = " + realDecision + System.getProperty("line.separator"));
 
 							if (res.decision == realDecision) {
 								success += 1.0;
 							}
 
 							if (this.testSignatures.get(j).getUserID() == this.testSignatures.get(k).getUserID() &&
-								this.testSignatures.get(j).isGenuine() != this.testSignatures.get(k).isGenuine()) {
+								this.testSignatures.get(j).isGenuine() != this.testSignatures.get(k).isGenuine())
+							{
 								if (res.decision == realDecision)
 									forgerySuccess += 1.0;
 								numberOfForgeryTests++;
