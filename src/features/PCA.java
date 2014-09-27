@@ -124,34 +124,51 @@ public class PCA
 	 * @param samplesCoordinates The coordinates of each sample in the original space
 	 * @return The new coordinates of each sample in the new space
 	 */
-	public static ArrayList<ArrayList<Double>> compute(ArrayList<ArrayList<Double>> samplesCoordinates)
+	public static ArrayList<RealVector> compute(ArrayList<ArrayList<Double>> samplesCoordinates)
 	{
 		RealMatrix m = normalize(samplesCoordinates);
 		RealMatrix covm = computeCovarianceMatrix(m);
 		ArrayList<RealVector> goodEigenVectors = computeAndSelectEigenVectors(covm, Integer.MAX_VALUE);
-		ArrayList<ArrayList<Double>> newCoords = computePrincipalComponents(m, goodEigenVectors);
+		//ArrayList<ArrayList<Double>> newCoords = computePrincipalComponents(m, goodEigenVectors);
 
-		System.out.println("Vector size before = " + samplesCoordinates.get(0).size());
-		System.out.println("Vector size after = " + newCoords.get(0).size());
+		System.out.println("[PCA]: Vector size before = " + samplesCoordinates.get(0).size());
+		System.out.println("[PCA]: Vector size after = " + goodEigenVectors.size());
 
-		return newCoords;
+		return goodEigenVectors;
 	}
 
 	/**
 	 * Principale Componant Analysis
 	 * @param samplesCoordinates The coordinates of each sample in the original space
 	 * @param k The number of desired dimension of the new space
-	 * @return The new coordinates of each sample in the new space
+	 * @return The eigen vectors to compute coordinates in the new space
 	 */
-	public static ArrayList<ArrayList<Double>> compute(ArrayList<ArrayList<Double>> samplesCoordinates, int k)
+	public static ArrayList<RealVector> compute(ArrayList<ArrayList<Double>> samplesCoordinates, int k)
 	{
 		RealMatrix m = normalize(samplesCoordinates);
 		RealMatrix covm = computeCovarianceMatrix(m);
 		ArrayList<RealVector> goodEigenVectors = computeAndSelectEigenVectors(covm, k);
-		ArrayList<ArrayList<Double>> newCoords = computePrincipalComponents(m, goodEigenVectors);
+		//ArrayList<ArrayList<Double>> newCoords = computePrincipalComponents(m, goodEigenVectors);
 
-		System.out.println("Vector size before = " + samplesCoordinates.get(0).size());
-		System.out.println("Vector size after = " + newCoords.get(0).size());
+		System.out.println("[PCA]: Vector size before = " + samplesCoordinates.get(0).size());
+		System.out.println("[PCA]: Vector size after = " + goodEigenVectors.size());
+
+		return goodEigenVectors;
+	}
+
+	public static ArrayList<Double> computeNewCoordinates(ArrayList<Double> sample, ArrayList<RealVector> eigenVectors)
+	{
+		ArrayList<Double> newCoords = new ArrayList<Double>();
+		double[] array = new double[sample.size()];
+		for (int i = 0; i < array.length; i++) {
+			array[i] = sample.get(i);
+		}
+
+		RealVector originalCoords = MatrixUtils.createRealVector(array);
+		for (RealVector u : eigenVectors) {
+			double component = originalCoords.dotProduct(u);
+			newCoords.add(component);
+		}
 
 		return newCoords;
 	}

@@ -8,6 +8,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 
+import org.apache.commons.math3.linear.RealVector;
+
 import plot.PlotChart;
 import preprocessing.Preprocessor;
 import train.Classifier;
@@ -17,9 +19,10 @@ import common.Signature;
 import common.SignatureException;
 
 import distance.Comparator;
+import distance.CompareResult;
 import features.FeatureExtractor;
 import features.GlobalFeatureVector;
-import features.LocalFeatureVector;
+import features.PCA;
 
 
 public class SignatureSystem
@@ -40,6 +43,19 @@ public class SignatureSystem
 		plotMode = false;
 	}
 
+	public ArrayList<RealVector> applyPCA(String database)
+	{
+		ArrayList<LabeledSignature> signatures = parseDatabaseFile(database);
+		ArrayList<ArrayList<Double>> featureVectors = new ArrayList<ArrayList<Double>>();
+
+		for (LabeledSignature s : signatures) {
+			GlobalFeatureVector v = FeatureExtractor.extractGlobalFeature(s);
+			featureVectors.add(v);
+		}
+
+		return PCA.compute(featureVectors);
+	}
+
 	/**
 	 * Train the program and measure performances
 	 * @param database File containing all the signatures path of all users
@@ -55,6 +71,9 @@ public class SignatureSystem
 			double globalIdentitySuccess = 0.0;
 			double globalIntraSuccess = 0.0;
 			double thresholdMean = 0.0;
+
+			// Compute PCA vectors
+			pca_vectors = applyPCA(database);
 
 			for (int i = 0; i < this.trainIteration; i++)
 			{
@@ -96,8 +115,8 @@ public class SignatureSystem
 							boolean realDecision = this.testSignatures.get(j).getUserID() == this.testSignatures.get(k).getUserID() &&
 									this.testSignatures.get(j).isGenuine() == this.testSignatures.get(k).isGenuine();
 							// Compare
-							CompareResult res = compareSignatures(this.testSignatures.get(j), this.testSignatures.get(k),
-																this.forgeryThreshold, this.identityThreshold);
+							CompareResult res = Comparator.compareSignatures(this.testSignatures.get(j), this.testSignatures.get(k),
+																			 this.forgeryThreshold, this.identityThreshold);
 
 							// Write log
 							writer.write(this.testSignatures.get(j).getName() + (this.testSignatures.get(j).isGenuine() ? " (genuine)" : " (forgery)"));
@@ -326,7 +345,7 @@ public class SignatureSystem
 		// Compute intra distances by comparing the user to himself
 		for (Signature gs : userTrain) {
 			for (Signature fs : signatureTrain) {
-				double d = compareSignatures(gs, fs);
+				double d = Comparator.compareSignatures(gs, fs);
 				extraDistances.add(d);
 			}
 		}
@@ -334,7 +353,7 @@ public class SignatureSystem
 		// Compute extra distances by comparaing the user to other signatures
 		for (int i = 0; i < userTrain.size(); i++) {
 			for (int j = i; j < userTrain.size(); j++) {
-				double d = compareSignatures(userTrain.get(i), userTrain.get(j));
+				double d = Comparator.compareSignatures(userTrain.get(i), userTrain.get(j));
 				intraDistances.add(d);
 			}
 		}
@@ -348,42 +367,7 @@ public class SignatureSystem
 		return threshold;
 	}
 
-	/**
-	 * Compare two preprocessed signatures
-	 * @param s1 First signature
-	 * @param s2 Second signature
-	 * @return Returns the measured distance between those signature
-	 */
-	public double compareSignatures(Signature s1, Signature s2)
-	{
-		LocalFeatureVector lv1 = FeatureExtractor.extractLocalFeature(s1);
-		GlobalFeatureVector gv1 = FeatureExtractor.extractGlobalFeature(s1);
-		LocalFeatureVector lv2 = FeatureExtractor.extractLocalFeature(s2);
-		GlobalFeatureVector gv2 = FeatureExtractor.extractGlobalFeature(s2);
 
-		double localDistance = Comparator.DTW(lv1, lv2);
-		double globalDistance = Comparator.compareGlobalFeature(gv1, gv2);
-
-		return  localDistance;
-	}
-
-	/**
-	 * Compare two preprocessed signatures and decide if they belong to the same user
-	 * @param s1 First signature
-	 * @param s2 Second signature
-	 * @param localThreshold The threshold to use for local features to take decision
-	 * @param globalThreshold The threshold to use for global features to take decision
-	 * @return Returns the measured distance between those signature
-	 * and wether they are from the same person or not
-	 */
-	public CompareResult compareSignatures(Signature s1, Signature s2, double localThreshold, double globalThreshold)
-	{
-		CompareResult res = new CompareResult();
-		res.distance = compareSignatures(s1, s2);
-		res.decision = res.distance < localThreshold;
-
-		return res;
-	}
 
 	/**
 	 * Compare a list of signature and store the results
@@ -414,7 +398,7 @@ public class SignatureSystem
 				Preprocessor.normalizeAndReduce(s2);
 
 				// Compare signatures
-				CompareResult res = compareSignatures(s1, s2, this.forgeryThreshold, this.identityThreshold);
+				CompareResult res = Comparator.compareSignatures(s1, s2, this.forgeryThreshold, this.identityThreshold);
 
 				// Write result
 				writer.write(line + " " + res.distance + " " + res.getDecision() + System.getProperty("line.separator"));

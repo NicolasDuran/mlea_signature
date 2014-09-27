@@ -261,7 +261,14 @@ public class FeatureExtractor {
 
 		v.add(features.get(GlobalFeature.TOTAL_LENGTH.index));
 		v.add(features.get(GlobalFeature.DURATION.index));
-		//v.add(features.get(GlobalFeature.START_END_DISTANCE.index));
+		v.add(features.get(GlobalFeature.START_END_DISTANCE.index));
+		v.add(features.get(GlobalFeature.VX_MEAN.index));
+		v.add(features.get(GlobalFeature.VY_MEAN.index));
+		v.add(features.get(GlobalFeature.AX_MEAN.index));
+		v.add(features.get(GlobalFeature.AY_MEAN.index));
+		v.add(features.get(GlobalFeature.A_MEAN.index));
+		v.add(features.get(GlobalFeature.A_MAX.index));
+		v.add(features.get(GlobalFeature.V_MAX.index));
 		v.add(features.get(GlobalFeature.ANGLE_SUM.index));
 		v.add(features.get(GlobalFeature.XY_RELATION.index));
 
@@ -273,11 +280,19 @@ public class FeatureExtractor {
 		LocalFeatureVector features = computeLocalFeatures(s);
 		LocalFeatureVector v = new LocalFeatureVector();
 
+		//v.add(features.get(LocalFeature.TIME_INDEX.index));
 		v.add(features.get(LocalFeature.POS_X.index));
 		v.add(features.get(LocalFeature.POS_Y.index));
+		//v.add(features.get(LocalFeature.POS_DX.index));
+		//v.add(features.get(LocalFeature.POS_DY.index));
+		//v.add(features.get(LocalFeature.ABS_POS_DX.index));
+		//v.add(features.get(LocalFeature.ABS_POS_DY.index));
+		//v.add(features.get(LocalFeature.COS_ALPHA.index));
 		v.add(features.get(LocalFeature.SIN_ALPHA.index));
-		//v.add(features.get(LocalFeature.CURVATURE.index));
+		v.add(features.get(LocalFeature.CURVATURE.index));
 		//v.add(features.get(LocalFeature.PRESSURE.index));
+		//v.add(features.get(LocalFeature.VX.index));
+		//v.add(features.get(LocalFeature.VY.index));
 		//v.add(features.get(LocalFeature.AX.index));
 		//v.add(features.get(LocalFeature.AY.index));
 

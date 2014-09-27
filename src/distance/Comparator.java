@@ -1,9 +1,16 @@
 package distance;
 
+import java.util.ArrayList;
+
+import org.apache.commons.math3.linear.RealVector;
 import org.apache.commons.math3.ml.distance.EuclideanDistance;
 
+import common.Signature;
+
+import features.FeatureExtractor;
 import features.GlobalFeatureVector;
 import features.LocalFeatureVector;
+import features.PCA;
 
 public class Comparator {
 
@@ -61,7 +68,7 @@ public class Comparator {
 	    return DTW[v1_size][v2_size];
 	}
 
-	public static double compareGlobalFeature(GlobalFeatureVector v1, GlobalFeatureVector v2)
+	public static double compareGlobalFeature(ArrayList<Double> v1, ArrayList<Double> v2)
 	{
 		int size = Math.min(v1.size(), v2.size()); // just in case
 		double dist = 0.0;
@@ -73,4 +80,86 @@ public class Comparator {
 		return Math.sqrt(dist);
 	}
 
+
+	/**
+	 * Compare two preprocessed signatures
+	 * @param s1 First signature
+	 * @param s2 Second signature
+	 * @return Returns the measured distance between those signature
+	 */
+	public static double compareSignatures(Signature s1, Signature s2)
+	{
+		LocalFeatureVector lv1 = FeatureExtractor.extractLocalFeature(s1);
+		GlobalFeatureVector gv1 = FeatureExtractor.extractGlobalFeature(s1);
+		LocalFeatureVector lv2 = FeatureExtractor.extractLocalFeature(s2);
+		GlobalFeatureVector gv2 = FeatureExtractor.extractGlobalFeature(s2);
+
+		double localDistance = Comparator.DTW(lv1, lv2);
+		double globalDistance = Comparator.compareGlobalFeature(gv1, gv2);
+
+		return  globalDistance;
+	}
+
+	/**
+	 * Compare two preprocessed signatures
+	 * @param s1 First signature
+	 * @param s2 Second signature
+	 * @param pca_vectors Vectors for a new space coordinates, computed using PCA, that will be
+	 * applied on global features
+	 * @return Returns the measured distance between those signature
+	 */
+	public static double compareSignatures(Signature s1, Signature s2, ArrayList<RealVector> pca_vectors)
+	{
+		LocalFeatureVector lv1 = FeatureExtractor.extractLocalFeature(s1);
+		GlobalFeatureVector gv1 = FeatureExtractor.extractGlobalFeature(s1);
+		LocalFeatureVector lv2 = FeatureExtractor.extractLocalFeature(s2);
+		GlobalFeatureVector gv2 = FeatureExtractor.extractGlobalFeature(s2);
+
+		// Change space coordinates
+		ArrayList<Double> new_gv1 = PCA.computeNewCoordinates(gv1, pca_vectors);
+		ArrayList<Double> new_gv2 = PCA.computeNewCoordinates(gv2, pca_vectors);
+
+		double localDistance = Comparator.DTW(lv1, lv2);
+		double globalDistance = Comparator.compareGlobalFeature(new_gv1, new_gv2);
+
+		return  globalDistance;
+	}
+
+	/**
+	 * Compare two preprocessed signatures and decide if they belong to the same user
+	 * @param s1 First signature
+	 * @param s2 Second signature
+	 * @param localThreshold The threshold to use for local features to take decision
+	 * @param globalThreshold The threshold to use for global features to take decision
+	 * @return Returns the measured distance between those signature
+	 * and wether they are from the same person or not
+	 */
+	public static CompareResult compareSignatures(Signature s1, Signature s2, double localThreshold, double globalThreshold)
+	{
+		CompareResult res = new CompareResult();
+		res.distance = compareSignatures(s1, s2);
+		res.decision = res.distance < localThreshold;
+
+		return res;
+	}
+
+	/**
+	 * Compare two preprocessed signatures and decide if they belong to the same user
+	 * @param s1 First signature
+	 * @param s2 Second signature
+	 * @param pca_vectors Vectors for a new space coordinates, computed using PCA, that will be
+	 * applied on global features
+	 * @param localThreshold The threshold to use for local features to take decision
+	 * @param globalThreshold The threshold to use for global features to take decision
+	 * @return Returns the measured distance between those signature
+	 * and wether they are from the same person or not
+	 */
+	public static CompareResult compareSignatures(Signature s1, Signature s2, ArrayList<RealVector> pca_vectors, double localThreshold, double globalThreshold)
+	{
+		CompareResult res = new CompareResult();
+		res.distance = compareSignatures(s1, s2, pca_vectors);
+		res.decision = res.distance < localThreshold;
+
+		return res;
+	}
 }

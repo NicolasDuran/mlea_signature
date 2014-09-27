@@ -1,8 +1,9 @@
+package distance;
 
 public class CompareResult {
 
-	double distance;
-	boolean decision;
+	public double distance;
+	public boolean decision;
 
 	public CompareResult() {
 
