@@ -1,0 +1,113 @@
+
+==== [MLEA] COMPARAISON DE SIGNATURES ====
+
+Thomas Kgaevski, Nicolas Duran, Rodolphe Guitteny, Célia Mercier
+
+-------------------
+Lancer le programme
+-------------------
+
+Point d'entrée du programme : classe Main
+Usage :
+	inputfile outputfile : Compare 2 à 2 les paires de signatures figurant dans le fichier inputfile
+							et écrit les résultats dans le fichier outputfile. Il s'agit des options spécifiques
+							au sujet de réda. 
+	--train : Pas encore implémenté !
+	--perfs database : Mesure les performances de notre système à partir de la base de données fournie.
+					   Utilisez par défaut sample/signatures, qui contient l'ensemble des signatures fournis par Réda.
+	--plotperfs database : Pareil que --perfs, mais plot en plus pour chaque user les deux classes de distances ainsi
+						   que le seuil. Ceci permet de visualiser à quel point les caractéristiques choisies permettent
+						   de séparer les données. Je conseille fortement de mettre l'attribut trainIteration de la classe
+						   SignatureSysyem à 1 pour pas avoir trop de graphique ! (1 par user par itération)
+
+-----------
+Vocabulaire
+-----------
+
+Juste pour qu'on soit tous sur la même longueur d'onde (et parce que j'utilise ces termes un peu partout) :
+
+	- Identity test : Un test d'identité est une comparaison entre une signature d'un user x et une signature d'un autre user y.
+					  Notons qu'il y a plus de tests possible d'identité que d'authenticité, donc les performances globales
+					  sont faussées ! D'où l'intérêt de regarder le pourcentage de forgery test.
+	- Forgery test : Un test de contrefaçon (ou d'authenticité) est une comparaison entre une signature d'un user et une
+					 signature contrefaite (imitée) de ce même user. Le taux de réussite sur les forgery tests sont les plus
+					 bas à l'heure actuelle.
+
+------------------------
+Mesurer les performances
+------------------------
+
+L'option --perfs permet de mesurer les performances du programme. Que fait-elle exactement ?
+Il s'agit d'un processus itératif qui va s'exécuter plusieurs fois avec à chaque itération des
+données d'entraînement et de test différentes.
+Le résultat final est la moyenne des performances sur l'ensemble des itérations. Cela permet d'éviter
+le surapprentissage.
+
+Le processus est le suivant :
+	- Séparation de la base de données en données d'entraînement et données de tests, de façon aléatoire.
+	
+	- Entraînement du programme sur les données d'entraînement
+		- Comparaison des signatures d'un même user avec lui-même et également avec les signatures imitées
+			-> On obtient deux classes :
+				- la classe des distances d'un user à lui même
+				- la classe des distances d'un user aux imitations
+			-> On calcul donc le seuil qui sépare le mieux les deux classes (dichotomie)
+		- On réitère pour chaque utilisateur et on fait la moyenne des 5 seuils obtenus, ce qui nous
+		  donne une seuil universel à utiliser pour la phase de test
+		  REMARQUE : à l'heure actuelle les seuils obtenus sont trop variés d'un utilisateur à un autre pour
+		  			 que la moyenne des seuils soient efficaces, d'où les faibles taux de réussite ! (voir les logs)
+		  
+	- Test des performances du seuil calculé sur les données de tests (elle sont toutes comparées deux à deux sans exception)
+		-> On compte le nombre de bonnes décisions pour avoir les pourcentages de réussites globaux mais aussi
+		   plus spécialement le pourcentage de bonnes décisions sur les questions d'authenticité (forgery tests),
+		   qui est bien évidemment plus faible et donc notre cible première !
+		   
+REMARQUE : Des logs sont produit au niveau de la console, mais un fichier perfs.log de logs beaucoup plus détaillé est créé 
+		   dans le dossier log/. Il contient entre autre les résultats de chacune des comparaisons qui ont été effectuées
+		   (attention, il y en a beaucoup ^^' !)
+
+----------------------------------
+Modifier le système de comparaison
+----------------------------------
+
+Le but est de trouver les jeux de paramètres qui donnent les meilleures performances.
+Ces paramètres sont multiples :
+	- Avec ou sans réduction de points
+	- Choix de la/les techniques de réductions de points
+	- Choix des caractéristiques locales
+	- Choix des caractéristiques globales (pas encore utilisables)
+	
+Preprocessing :
+=============
+	On va laisser le choix des techniques de réduction de points à Thomas, qui s'y connait mieux.
+	En revanche si vous voulez tester sans la réductionde points, il suffit de commenter la ligne 22 :
+	'new Reducer().reduce(signature);' dans la classe Preprocessor.
+	
+Features :
+========
+	Plusieurs features ont été implémentées (non testées !). Il y a deux types de caractéristiques :
+		- LocalFeature : caractéristique locale, c'est à dire qu'on dispose d'une valeur pour
+						 chacun des points de la signature (une seule caractéristique local est donc une liste !) 
+		- GlobalFeature : caractéristique globale, c'est à dire qu'on dispose que d'une valeur pour
+						  caractériser l'ensemble de la signature
+						  
+	Une signature va donc être caractérisée par :
+		- LocalFeatureVector : il s'agit d'une liste caractéristiques locales (donc une liste, de liste !)
+		- GlobalFeatureVector : il s'agit d'une liste de caractéristiques globales (donc une simple liste de valeurs)
+
+	Pour choisir de quelles features vont être composés les vecteurs de caractéristiques des signatures, il faut
+	regarder les méthodes extractLocalFeature et extractGlobalFeature de la classe FeatureExtractor.
+	Toutes les features à utiliser sont ajoutées à la liste v ainsi (de même pour les features globales) :
+		v.add(features.get(LocalFeature.MA_FEATURE.index));
+	où LocalFeature est une énumération.
+		
+	REMARQUE : Les différentes caractéristiques locales n'ont pas toujours le même nombre de points, donc attention
+			   vis à vis de la DTW ! Soit on trouve un moyen pour gérer des vecteurs de caractéristiques dont les
+			   features n'ont pas toujours les même dimensions, soit il faut créer des vecteurs avec que des
+			   features de même dimensions et puis lancer plusieurs DTW, et faire par exemple la somme des distances
+			   obtenues (ou une distance euclidienne ...) ...
+			   Le nombre de points pour chaque feature locale est mit en commentaire dans l'enum LocalFeature
+
+	/!\ A l'heure actuelle les globales features ne sont pas utilisées lors de la comparaison, donc ça sert à rien
+		de les tester pour l'instant.
+

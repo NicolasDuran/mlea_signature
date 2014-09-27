@@ -17,12 +17,7 @@ public class Main
 
 		// Train program and produce a model file for further testing
 		if (args[0].equals("--train ")) {
-			if (args.length < 3) {
-				System.err.println(usage);
-				return;
-			}
-
-			// TODO ?
+			// TODO
 		}
 		// Measure performances of the program by generate several random training and testing
 		else if (args[0].equals("--perfs")) {
@@ -33,9 +28,20 @@ public class Main
 
 			syst.measurePerformances(args[1]);
 		}
+		// Measure performances of the program by generate several random training and testing and plot distance classes
+		else if (args[0].equals("--plotperfs")) {
+			if (args.length < 2) {
+				System.err.println(usage);
+				return;
+			}
+
+			syst.plotMode = true;
+			syst.measurePerformances(args[1]);
+		}
 		// Compare signatures provided in the given file, and write the result in the given output filename
 		else {
-			syst.compareSignaturesFromFile(args[0], args[1], syst.forgeryThreshold, syst.identityThreshold);
+			syst.forgeryThreshold = 389.64616403731014;
+			syst.compareSignaturesFromFile(args[0], args[1]);
 		}
 
 		return;

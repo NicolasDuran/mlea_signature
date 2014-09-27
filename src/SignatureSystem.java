@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 
+import plot.PlotChart;
 import preprocessing.Preprocessor;
 import train.Classifier;
 
@@ -15,22 +16,29 @@ import common.LabeledSignature;
 import common.Signature;
 import common.SignatureException;
 
-import distance.DTW_naive;
+import distance.Comparator;
 import features.FeatureExtractor;
+import features.GlobalFeatureVector;
 import features.LocalFeatureVector;
 
 
 public class SignatureSystem
 {
 	final int numberOfUsers = 5;
-	final int trainIteration = 5;
+	final int trainIteration = 3;
 
 	double forgeryThreshold;
 	double identityThreshold;
 
+	boolean plotMode;
+
 	private ArrayList<ArrayList<LabeledSignature>> userGenuineTrainSignatures;
 	private ArrayList<ArrayList<LabeledSignature>> userForgeryTrainSignatures;
 	private ArrayList<LabeledSignature> testSignatures;
+
+	public SignatureSystem() {
+		plotMode = false;
+	}
 
 	/**
 	 * Train the program and measure performances
@@ -44,6 +52,9 @@ public class SignatureSystem
 
 			double globalSuccess = 0.0;
 			double globalForgerySuccess = 0.0;
+			double globalIdentitySuccess = 0.0;
+			double globalIntraSuccess = 0.0;
+			double thresholdMean = 0.0;
 
 			for (int i = 0; i < this.trainIteration; i++)
 			{
@@ -53,10 +64,13 @@ public class SignatureSystem
 				System.out.println("================ Train ================");
 				chooseTrainAndTestSignatures(database);
 				this.forgeryThreshold = trainUnversalForgeryThreshold();
-				//this.identityThreshold = trainUnversalIdentityThreshold();
+				thresholdMean += this.forgeryThreshold;
+
 				writer.write("Chosen LocalThreshold : " + this.forgeryThreshold + System.getProperty("line.separator"));
-				//writer.write("GlobalThreshold : " + this.identityThreshold + System.getProperty("line.separator"));
 				System.out.println("Chosen LocalThreshold : " + this.forgeryThreshold);
+
+				//this.identityThreshold = trainUnversalIdentityThreshold();
+				//writer.write("GlobalThreshold : " + this.identityThreshold + System.getProperty("line.separator"));
 				//System.out.println("GlobalThreshold : " + this.identityThreshold);
 
 				// Test
@@ -64,12 +78,20 @@ public class SignatureSystem
 
 				double success = 0.0;
 				double forgerySuccess = 0.0;
+				double identitySuccess = 0.0;
+				double intraSuccess = 0.0;
 				int numberOfForgeryTests = 0;
 				int numberOfIdentityTests = 0;
+				int numberOfIntraTests = 0;
 
 				for (int j = 0; j < this.testSignatures.size(); j++) {
 					for (int k = j + 1; k < this.testSignatures.size(); k++) {
-						if (j != k) {
+						if (j != k)
+						{
+							// Don't compare forgery with forgery
+							if (!this.testSignatures.get(j).isGenuine() && !this.testSignatures.get(k).isGenuine())
+								continue;
+
 							// Same user = same ID + genuine
 							boolean realDecision = this.testSignatures.get(j).getUserID() == this.testSignatures.get(k).getUserID() &&
 									this.testSignatures.get(j).isGenuine() == this.testSignatures.get(k).isGenuine();
@@ -78,48 +100,78 @@ public class SignatureSystem
 																this.forgeryThreshold, this.identityThreshold);
 
 							// Write log
-							writer.write("USER " + this.testSignatures.get(j).getUserID() + (this.testSignatures.get(j).isGenuine() ? " genuine" : " forgery"));
-							writer.write(" - USER " + this.testSignatures.get(k).getUserID() + (this.testSignatures.get(k).isGenuine() ? " genuine" : " forgery"));
-							writer.write(" : dist = " + res.distance + " decision = " + res.getDecision() + " reality = " + realDecision + System.getProperty("line.separator"));
+							writer.write(this.testSignatures.get(j).getName() + (this.testSignatures.get(j).isGenuine() ? " (genuine)" : " (forgery)"));
+							writer.write(" - " + this.testSignatures.get(k).getName() + (this.testSignatures.get(k).isGenuine() ? " (genuine)" : " (forgery)"));
+							writer.write(" : dist = " + res.distance + ", decision = " + res.decision + ", reality = " + realDecision + System.getProperty("line.separator"));
 
+							// Count success
 							if (res.decision == realDecision) {
 								success += 1.0;
 							}
 
 							if (this.testSignatures.get(j).getUserID() == this.testSignatures.get(k).getUserID() &&
-								this.testSignatures.get(j).isGenuine() != this.testSignatures.get(k).isGenuine()) {
+								this.testSignatures.get(j).isGenuine() != this.testSignatures.get(k).isGenuine())
+							{
 								if (res.decision == realDecision)
 									forgerySuccess += 1.0;
 								numberOfForgeryTests++;
 							}
-							else {
+
+							if (this.testSignatures.get(j).getUserID() == this.testSignatures.get(k).getUserID() &&
+								this.testSignatures.get(j).isGenuine() == this.testSignatures.get(k).isGenuine()) {
+								if (res.decision == realDecision)
+									intraSuccess += 1.0;
+								numberOfIntraTests++;
+							}
+
+							if (this.testSignatures.get(j).getUserID() != this.testSignatures.get(k).getUserID() ||
+								this.testSignatures.get(j).isGenuine() == this.testSignatures.get(k).isGenuine())
+							{
+								if (res.decision == realDecision)
+									identitySuccess += 1.0;
 								numberOfIdentityTests++;
 							}
+
 						}
 					}
 				}
 
 				success = 100.0 * success / (numberOfForgeryTests + numberOfIdentityTests);
 				forgerySuccess = 100.0 * forgerySuccess / numberOfForgeryTests;
+				identitySuccess = 100.0 * identitySuccess / numberOfIdentityTests;
+				intraSuccess = 100.0 * intraSuccess / numberOfIntraTests;
+
 				globalSuccess += success;
 				globalForgerySuccess += forgerySuccess;
+				globalIdentitySuccess += identitySuccess;
+				globalIntraSuccess += intraSuccess;
 
 				System.out.println("[" + i + "]: " + success + "% success over " +
 						numberOfForgeryTests + " forgery tests and " + numberOfIdentityTests + " identity tests.");
-				System.out.println("     " + forgerySuccess + "% factory success");
+				System.out.println("     \t" + forgerySuccess + "% forgery success");
+				System.out.println("     \t" + identitySuccess + "% identity success");
+				System.out.println("     \t\t" + intraSuccess + "% intra success");
 
 				// Writer log result
 				writer.write("=== Result ===" + System.getProperty("line.separator"));
 				writer.write("=== " + success + "% success ===" + System.getProperty("line.separator"));
 				writer.write("=== " + forgerySuccess + "% forgery success ===" + System.getProperty("line.separator"));
+				writer.write("=== " + identitySuccess + "% identity success ===" + System.getProperty("line.separator"));
+				writer.write("=== " + intraSuccess + "% intra success ===" + System.getProperty("line.separator"));
 			}
 
+			thresholdMean /= trainIteration;
 			globalSuccess /= trainIteration;
 			globalForgerySuccess /= trainIteration;
+			globalIdentitySuccess /= trainIteration;
+			globalIntraSuccess /= trainIteration;
 
 			System.out.println("=================================================");
+			System.out.println("[Threshold]: " + thresholdMean);
 			System.out.println("[Performances]: " + globalSuccess + "% success");
-			System.out.println("                " + globalForgerySuccess + "% forgery success");
+			System.out.println("                \t" + globalForgerySuccess + "% forgery success");
+			System.out.println("                \t" + globalIdentitySuccess + "% identity success");
+			System.out.println("                \t\t" + globalIntraSuccess + "% intra success");
 
 			writer.close();
 
@@ -288,6 +340,11 @@ public class SignatureSystem
 		}
 
 		double threshold = Classifier.computeThreshold(intraDistances, extraDistances);
+
+		if (plotMode) {
+			PlotChart.Plot("User " + userTrain.get(0).getUserID(), intraDistances, extraDistances, threshold);
+		}
+
 		return threshold;
 	}
 
@@ -299,11 +356,15 @@ public class SignatureSystem
 	 */
 	public double compareSignatures(Signature s1, Signature s2)
 	{
-		LocalFeatureVector v1 = FeatureExtractor.extractLocalFeature(s1);
-		LocalFeatureVector v2 = FeatureExtractor.extractLocalFeature(s2);
+		LocalFeatureVector lv1 = FeatureExtractor.extractLocalFeature(s1);
+		GlobalFeatureVector gv1 = FeatureExtractor.extractGlobalFeature(s1);
+		LocalFeatureVector lv2 = FeatureExtractor.extractLocalFeature(s2);
+		GlobalFeatureVector gv2 = FeatureExtractor.extractGlobalFeature(s2);
 
-		double distance = DTW_naive.DTWDistance(v1, v2);
-		return distance;
+		double localDistance = Comparator.DTW(lv1, lv2);
+		double globalDistance = Comparator.compareGlobalFeature(gv1, gv2);
+
+		return  localDistance;
 	}
 
 	/**
@@ -318,10 +379,7 @@ public class SignatureSystem
 	public CompareResult compareSignatures(Signature s1, Signature s2, double localThreshold, double globalThreshold)
 	{
 		CompareResult res = new CompareResult();
-		LocalFeatureVector v1 = FeatureExtractor.extractLocalFeature(s1);
-		LocalFeatureVector v2 = FeatureExtractor.extractLocalFeature(s2);
-
-		res.distance = DTW_naive.DTWDistance(v1, v2);
+		res.distance = compareSignatures(s1, s2);
 		res.decision = res.distance < localThreshold;
 
 		return res;
@@ -332,7 +390,7 @@ public class SignatureSystem
 	 * @param inputfile A file containing on each line two signature paths to compare.
 	 * @param outputfile The file in which we store the comparison results
 	 */
-	public void compareSignaturesFromFile(String inputfile, String outputfile, double localThreshold, double globalThreshold)
+	public void compareSignaturesFromFile(String inputfile, String outputfile)
 	{
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(inputfile));
@@ -356,7 +414,7 @@ public class SignatureSystem
 				Preprocessor.normalizeAndReduce(s2);
 
 				// Compare signatures
-				CompareResult res = compareSignatures(s1, s2, localThreshold, globalThreshold);
+				CompareResult res = compareSignatures(s1, s2, this.forgeryThreshold, this.identityThreshold);
 
 				// Write result
 				writer.write(line + " " + res.distance + " " + res.getDecision() + System.getProperty("line.separator"));
@@ -403,104 +461,4 @@ public class SignatureSystem
 
 		return database;
 	}
-
-	/**
-	 * Measure system performances by training and testing
-	 * using the Cross Validation algorithm
-	 * @param genuinesDatabase File containing all the genuine signatures paths available as a database
-	 * @param forgeriesDatabase File containing all the forgeries signatures paths available as a database
-	 */
-	/*public void mesurePerformances(String genuinesDatabase, String forgeriesDatabase)
-	{
-		ArrayList<LabeledSignature> genuines = parseDatabaseFile(genuinesDatabase);
-		ArrayList<LabeledSignature> forgeries = parseDatabaseFile(forgeriesDatabase);
-		if (genuines == null || forgeries == null) return;
-
-		// Cross Validation Algorithm
-		ArrayList<LabeledSignature> trainSignatures = new ArrayList<LabeledSignature>();
-		ArrayList<LabeledSignature> testSignatures = new ArrayList<LabeledSignature>();
-		double globalPerfs = 0;
-
-		int trainSize = (int)(6.0 * genuines.size() / 10.0); // 60% of the database size
-		System.out.println("Train size = " + trainSize);
-
-		File logFile = new File("log/perfs.log");
-		FileWriter writer;
-		try {
-			writer = new FileWriter(logFile);
-
-			for (int i = 0; i < genuines.size(); i++)
-			{
-				trainSignatures.clear();
-				testSignatures.clear();
-
-				// Select train and test signatures from genuine database
-				System.out.println("[" + i + "] Select train and test signatures");
-
-				int borneSup = (i + trainSize) % genuines.size();
-				for (int k = 0; k < genuines.size(); k++)
-				{
-					if (borneSup > i) {
-						if (k >= i && k < borneSup)
-							trainSignatures.add(genuines.get(k));
-						else
-							testSignatures.add(genuines.get(k));
-					}
-					else if (borneSup < i) {
-						if (k >= borneSup && k < i)
-							testSignatures.add(genuines.get(k));
-						else
-							trainSignatures.add(genuines.get(k));
-					}
-				}
-
-				testSignatures.addAll(forgeries);
-
-				// Train program
-				System.out.println("[" + i + "] Train program");
-				train(trainSignatures);
-
-				// Compare two by two all test signatures, but avoid to compare two forgeries
-				// signatures, because we don't know in this case
-				System.out.println("[" + i + "] Test program");
-				int numberOfSuccess = 0;
-				int numberOfTests = 0;
-				for (int k = 0; k < testSignatures.size() - 1; k++)
-				{
-					LabeledSignature s1 = testSignatures.get(k);
-					for (int j = k + 1; j < testSignatures.size(); j++)
-					{
-						LabeledSignature s2 = testSignatures.get(j);
-
-						if (!s1.isGenuine() && !s2.isGenuine()) {
-							continue;
-						}
-
-						boolean result = compareSignatures(s1, s2, this.localThreshold, this.globalThreshold).decision;
-						boolean realResult = (s1.getUserID() == s2.getUserID()) && (s1.isGenuine() && s2.isGenuine());
-						if (result == realResult) {
-							numberOfSuccess++;
-						}
-
-						writer.write(s1.getFilename() + " - " + s2.getFilename() + " : decision = " + result + ", real = " + realResult + System.getProperty("line.separator"));
-
-						numberOfTests++;
-					}
-				}
-
-				double perfs = (double)numberOfSuccess / (double)numberOfTests;
-				writer.write("Run " + i + " : success = " + (100.0 * perfs) + "%" + System.getProperty("line.separator"));
-				globalPerfs += perfs;
-			}
-
-			globalPerfs = 100.0 * globalPerfs / genuines.size();
-
-			writer.write("---------------------------------------" + System.getProperty("line.separator"));
-			writer.write("Global performances : success = " + globalPerfs + "%" + System.getProperty("line.separator"));
-			System.out.println("Global performances : success = " + globalPerfs + "%");
-			writer.close();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-	}*/
 }

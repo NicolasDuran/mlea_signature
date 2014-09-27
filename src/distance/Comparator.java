@@ -2,27 +2,26 @@ package distance;
 
 import org.apache.commons.math3.ml.distance.EuclideanDistance;
 
+import features.GlobalFeatureVector;
 import features.LocalFeatureVector;
 
+public class Comparator {
 
-//Based on pseudo code found here :
-//http://en.wikipedia.org/w/index.php?title=Dynamic_time_warping&oldid=623046081
-public class DTW_naive {
-
-	public static double DTWDistance(LocalFeatureVector v1, LocalFeatureVector v2)
+	//Based on pseudo code found here :
+	//http://en.wikipedia.org/w/index.php?title=Dynamic_time_warping&oldid=623046081
+	public static double DTW(LocalFeatureVector v1, LocalFeatureVector v2)
 	{
 		//System.out.println("\n===== DTW =====");
+
 		if (v1 == null || v2 == null || v1.size() == 0|| v2.size() == 0)
 			return -1;
 
-		//System.out.println("  Valeurs de ref FastDTW :");
-		//DDTW_compare.DTWDistance(v1, v2);
 		int nbfeatures = Math.min(v1.size(), v2.size());
 		int v1_size = v1.get(0).size();
 		int v2_size = v2.get(0).size();
 		EuclideanDistance edc = new EuclideanDistance();
 
-		//Not needed ?
+		// In case features have not the same number of points
 		for (int i = 1; i < nbfeatures; i++)
 			v1_size = Math.min(v1_size, v1.get(i).size());
 		for (int i = 1; i < nbfeatures; i++)
@@ -55,9 +54,23 @@ public class DTW_naive {
 		            				 DTW[i-1][j-1]); // match
 	    	}
 	    }
+
 	    //System.out.println("\n     DTW_NAIVE : " + DTW[v1_size][v2_size]);
 	    //System.out.println("===============");
+
 	    return DTW[v1_size][v2_size];
+	}
+
+	public static double compareGlobalFeature(GlobalFeatureVector v1, GlobalFeatureVector v2)
+	{
+		int size = Math.min(v1.size(), v2.size()); // just in case
+		double dist = 0.0;
+
+		for (int i = 0; i < size; i++) {
+			dist += Math.pow(v1.get(i) - v2.get(i), 2);
+		}
+
+		return Math.sqrt(dist);
 	}
 
 }

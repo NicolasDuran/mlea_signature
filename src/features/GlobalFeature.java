@@ -1,5 +1,6 @@
 package features;
 
+/* La majorite de ces features proviennent de l'Etat de l'Art */
 public enum GlobalFeature
 {
 	TOTAL_LENGTH(0),

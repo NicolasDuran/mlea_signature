@@ -1,6 +1,7 @@
 package features;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 import common.Point;
 import common.Signature;
@@ -38,12 +39,22 @@ public class FeatureExtractor {
 				double eucliDist = Math.sqrt(dx * dx + dy * dy);
 
 				double dt = s.getPoints().get(i + 1).getTime() - p.getTime();
-				double dvx = dx / dt;
-				double dvy = dy / dt;
-				double dv = eucliDist / dt;
-				double dax = dvx / dt;
-				double day = dvy / dt;
-				double da = dv / dt;
+				double dvx = 0;
+				double dvy = 0;
+				double dv = 0;
+				double dax = 0;
+				double day = 0;
+				double da = 0;
+
+				// Just in case, but shouldn't happen
+				if (dt != 0) {
+					dvx = dx / dt;
+					dvy = dy / dt;
+					dv = eucliDist / dt;
+					dax = dvx / dt;
+					day = dvy / dt;
+					da = dv / dt;
+				}
 
 				dxSum += dx;
 				dySum += dy;
@@ -62,7 +73,10 @@ public class FeatureExtractor {
 					amax = da;
 				}
 
-				angleSum += Math.atan(dy / dx);
+				if (dx != 0)
+					angleSum += Math.atan(dy / dx);
+				else
+					angleSum += Math.PI / 2;
 
 				totalLength += eucliDist;
 			}
@@ -136,6 +150,8 @@ public class FeatureExtractor {
 					double cvy = 0;
 					double cax = 0;
 					double cay = 0;
+
+					// Just in case, but shouldn't happen
 					if (dt != 0) {
 						cvx = (p.getX() - previousCriticalPoint.getX()) / dt;
 						cvy = (p.getY() - previousCriticalPoint.getY()) / dt;
@@ -162,6 +178,8 @@ public class FeatureExtractor {
 				double dvy = 0;
 				double dax = 0;
 				double day = 0;
+
+				// Just in case, but shouldn't happen
 				if (dt != 0) {
 					dvx = dx / dt;
 					dvy = dy / dt;
@@ -178,8 +196,17 @@ public class FeatureExtractor {
 				ax.add(dax);
 				ay.add(day);
 
-				double cosa = Math.abs(dx) / Math.sqrt(dx * dx + dy * dy);
-				double sina = Math.abs(dy) / Math.sqrt(dx * dx + dy * dy);
+				double cosa = 1.0;
+				double sina = 1.0;
+				// Just in case, but shouldn't happen
+				if (dx != 0 && dy != 0) {
+					cosa = Math.abs(dx) / Math.sqrt(dx * dx + dy * dy);
+					sina = Math.abs(dy) / Math.sqrt(dx * dx + dy * dy);
+				}
+				else {
+					//System.err.println("[" + i + "][" + (i+1) + "] same points !");
+				}
+
 				alphacos.add(cosa);
 				alphasin.add(sina);
 			}
@@ -191,7 +218,12 @@ public class FeatureExtractor {
 				double b = Math.sqrt(Math.pow(p.getX() - s.getPoints().get(i - 2).getX(), 2) + Math.pow(p.getY() - s.getPoints().get(i - 2).getY(), 2));
 				double c = Math.sqrt(Math.pow(s.getPoints().get(i - 2).getX() - s.getPoints().get(i + 2).getX(), 2) + Math.pow(s.getPoints().get(i - 2).getY() - s.getPoints().get(i + 2).getY(), 2));
 				double a = Math.sqrt(Math.pow(p.getX() - s.getPoints().get(i - 2).getX(), 2) + Math.pow(p.getY() - s.getPoints().get(i - 2).getY(), 2));
-				double cosa = (b*b + c*c - a*a) / (2*b*c);
+				double cosa = 0;
+				// Just in case, but shouldn't happen
+				if (b != 0 && c != 0) {
+					cosa = (b*b + c*c - a*a) / (2*b*c);
+				}
+
 				curvature.add(cosa);
 			}
 
@@ -229,7 +261,9 @@ public class FeatureExtractor {
 
 		v.add(features.get(GlobalFeature.TOTAL_LENGTH.index));
 		v.add(features.get(GlobalFeature.DURATION.index));
-		v.add(features.get(GlobalFeature.START_END_DISTANCE.index));
+		//v.add(features.get(GlobalFeature.START_END_DISTANCE.index));
+		v.add(features.get(GlobalFeature.ANGLE_SUM.index));
+		v.add(features.get(GlobalFeature.XY_RELATION.index));
 
 		return v;
 	}
@@ -239,11 +273,26 @@ public class FeatureExtractor {
 		LocalFeatureVector features = computeLocalFeatures(s);
 		LocalFeatureVector v = new LocalFeatureVector();
 
-		v.add(features.get(LocalFeature.POS_DX.index));
-		v.add(features.get(LocalFeature.POS_DY.index));
-		//v.add(features.get(LocalFeature.COS_ALPHA.index));
+		v.add(features.get(LocalFeature.POS_X.index));
+		v.add(features.get(LocalFeature.POS_Y.index));
+		v.add(features.get(LocalFeature.SIN_ALPHA.index));
+		//v.add(features.get(LocalFeature.CURVATURE.index));
+		//v.add(features.get(LocalFeature.PRESSURE.index));
+		//v.add(features.get(LocalFeature.AX.index));
+		//v.add(features.get(LocalFeature.AY.index));
+
+		normalize(v);
 
 		return v;
 	}
 
+	public static void normalize(LocalFeatureVector v)
+	{
+		for (ArrayList<Double> f : v) {
+			double max = Collections.max(f);
+			for (int i = 0; i < f.size(); i++) {
+				f.set(i, f.get(i) / max);
+			}
+		}
+	}
 }

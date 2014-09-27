@@ -4,6 +4,7 @@ public class LabeledSignature extends Signature
 {
 	private int userID;
 	private boolean genuine;
+	private String name;
 
 	public LabeledSignature(Signature s, int userID, boolean genuine) {
 		super(s);
@@ -15,6 +16,7 @@ public class LabeledSignature extends Signature
 		super(path);
 		this.userID = userID;
 		this.genuine = genuine;
+		this.name = getFilename(path);
 	}
 
 	private String getFilename(String path)
@@ -40,18 +42,19 @@ public class LabeledSignature extends Signature
 	public LabeledSignature(String path) throws SignatureException {
 		super(path);
 
+		this.name = getFilename(path);
+
 		// Get user ID
-		String filename = getFilename(path);
-		this.userID = filename.charAt(4) - 48;
+		this.userID = name.charAt(4) - 48;
 
 		if (this.userID < 0 || this.userID > 5) {
 			throw new SignatureException("Malformed signature filename (UserID)");
 		}
 
 		// Get sample ID
-		String sampleStringID = "" + filename.charAt(6);
-		if (filename.charAt(7) != '.') {
-			sampleStringID += filename.charAt(7);
+		String sampleStringID = "" + name.charAt(6);
+		if (name.charAt(7) != '.') {
+			sampleStringID += name.charAt(7);
 		}
 
 		int sampleID;
@@ -62,6 +65,10 @@ public class LabeledSignature extends Signature
 		}
 
 		this.genuine = sampleID <= 20;
+	}
+
+	public String getName() {
+		return name;
 	}
 
 	public int getUserID() {
