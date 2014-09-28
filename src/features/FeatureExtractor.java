@@ -8,7 +8,10 @@ import common.Signature;
 
 public class FeatureExtractor {
 
-	private static GlobalFeatureVector computeGlobalFeatures(Signature s)
+	public static final int numberOfGlobalFeatures = 13;
+	public static final int numberOfLocalFeatures = 15;
+
+	public static GlobalFeatureVector computeGlobalFeatures(Signature s)
 	{
 		GlobalFeatureVector globVect = new GlobalFeatureVector();
 		double totalLength = 0;
@@ -108,9 +111,10 @@ public class FeatureExtractor {
 		return globVect;
 	}
 
-	private static LocalFeatureVector computeLocalFeatures(Signature s)
+	public static LocalFeatureVector computeLocalFeatures(Signature s)
 	{
 		ArrayList<Double> pressure = new ArrayList<Double>();
+		ArrayList<Double> azimuth = new ArrayList<Double>();
 		ArrayList<Double> times = new ArrayList<Double>();
 		ArrayList<Double> posx = new ArrayList<Double>();
 		ArrayList<Double> posy = new ArrayList<Double>();
@@ -141,6 +145,7 @@ public class FeatureExtractor {
 			posx.add(p.getX());
 			posy.add(p.getY());
 			pressure.add((new Integer(p.getPressure())).doubleValue());
+			azimuth.add((new Integer(p.getAzimuth())).doubleValue());
 
 			// Compute speed between critical points
 			if (p.isCritical()) {
@@ -250,6 +255,7 @@ public class FeatureExtractor {
 		locVect.add(criticalax);
 		locVect.add(criticalay);
 		locVect.add(pressure);
+		locVect.add(azimuth);
 
 		return locVect;
 	}
@@ -264,11 +270,12 @@ public class FeatureExtractor {
 		v.add(features.get(GlobalFeature.START_END_DISTANCE.index));
 		v.add(features.get(GlobalFeature.VX_MEAN.index));
 		v.add(features.get(GlobalFeature.VY_MEAN.index));
+		v.add(features.get(GlobalFeature.V_MEAN.index));
+		v.add(features.get(GlobalFeature.V_MAX.index));
 		v.add(features.get(GlobalFeature.AX_MEAN.index));
 		v.add(features.get(GlobalFeature.AY_MEAN.index));
 		v.add(features.get(GlobalFeature.A_MEAN.index));
 		v.add(features.get(GlobalFeature.A_MAX.index));
-		v.add(features.get(GlobalFeature.V_MAX.index));
 		v.add(features.get(GlobalFeature.ANGLE_SUM.index));
 		v.add(features.get(GlobalFeature.XY_RELATION.index));
 
@@ -280,23 +287,24 @@ public class FeatureExtractor {
 		LocalFeatureVector features = computeLocalFeatures(s);
 		LocalFeatureVector v = new LocalFeatureVector();
 
-		//v.add(features.get(LocalFeature.TIME_INDEX.index));
+		/*v.add(features.get(LocalFeature.TIME_INDEX.index));
 		v.add(features.get(LocalFeature.POS_X.index));
 		v.add(features.get(LocalFeature.POS_Y.index));
-		//v.add(features.get(LocalFeature.POS_DX.index));
-		//v.add(features.get(LocalFeature.POS_DY.index));
-		//v.add(features.get(LocalFeature.ABS_POS_DX.index));
-		//v.add(features.get(LocalFeature.ABS_POS_DY.index));
-		//v.add(features.get(LocalFeature.COS_ALPHA.index));
+		v.add(features.get(LocalFeature.POS_DX.index));
+		v.add(features.get(LocalFeature.POS_DY.index));
+		v.add(features.get(LocalFeature.ABS_POS_DX.index));
+		v.add(features.get(LocalFeature.ABS_POS_DY.index));
+		v.add(features.get(LocalFeature.COS_ALPHA.index));
 		v.add(features.get(LocalFeature.SIN_ALPHA.index));
 		v.add(features.get(LocalFeature.CURVATURE.index));
-		//v.add(features.get(LocalFeature.PRESSURE.index));
-		//v.add(features.get(LocalFeature.VX.index));
-		//v.add(features.get(LocalFeature.VY.index));
-		//v.add(features.get(LocalFeature.AX.index));
-		//v.add(features.get(LocalFeature.AY.index));
+		v.add(features.get(LocalFeature.VX.index));
+		v.add(features.get(LocalFeature.VY.index));
+		v.add(features.get(LocalFeature.AX.index));
+		v.add(features.get(LocalFeature.AY.index));*/
+		v.add(features.get(LocalFeature.PRESSURE.index));
+		v.add(features.get(LocalFeature.AZIMUTH.index));
 
-		normalize(v);
+		//normalize(v);
 
 		return v;
 	}

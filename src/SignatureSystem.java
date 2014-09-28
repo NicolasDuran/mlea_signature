@@ -28,7 +28,7 @@ import features.PCA;
 public class SignatureSystem
 {
 	final int numberOfUsers = 5;
-	final int trainIteration = 3;
+	final int trainIteration = 5;
 
 	double forgeryThreshold;
 	double identityThreshold;
@@ -41,19 +41,6 @@ public class SignatureSystem
 
 	public SignatureSystem() {
 		plotMode = false;
-	}
-
-	public ArrayList<RealVector> applyPCA(String database)
-	{
-		ArrayList<LabeledSignature> signatures = parseDatabaseFile(database);
-		ArrayList<ArrayList<Double>> featureVectors = new ArrayList<ArrayList<Double>>();
-
-		for (LabeledSignature s : signatures) {
-			GlobalFeatureVector v = FeatureExtractor.extractGlobalFeature(s);
-			featureVectors.add(v);
-		}
-
-		return PCA.compute(featureVectors);
 	}
 
 	/**
@@ -411,9 +398,12 @@ public class SignatureSystem
 		} catch (SignatureException e) {
 			e.printStackTrace();
 		}
-
 	}
 
+	/**
+	 * @param filename The database file containing all signature file paths
+	 * @return The list of all extracted and preprocessed signatures
+	 */
 	private ArrayList<LabeledSignature> parseDatabaseFile(String filename)
 	{
 		ArrayList<LabeledSignature> database = new ArrayList<LabeledSignature>();
@@ -441,5 +431,74 @@ public class SignatureSystem
 		}
 
 		return database;
+	}
+
+		/**
+	 * @param database The database file containing all signature file paths
+	 * @return The eigen vectors to convert global features into a new space with less dimension
+	 * @see PCA.computeNewCoordinates
+	 */
+	public ArrayList<RealVector> applyPCA(String database)
+	{
+		ArrayList<LabeledSignature> signatures = parseDatabaseFile(database);
+		ArrayList<ArrayList<Double>> featureVectors = new ArrayList<ArrayList<Double>>();
+
+		for (LabeledSignature s : signatures) {
+			GlobalFeatureVector v = FeatureExtractor.extractGlobalFeature(s);
+			featureVectors.add(v);
+		}
+
+		return PCA.compute(featureVectors);
+	}
+
+	/**
+	 * @param database The database file containing all signature file paths
+	 * @return The list of each feature normalizing weights, i.e the maximum value find
+	 * over the whole database for each of them
+	 */
+	public double[] findGlobalFeaturesWeightsUsingMax(String database)
+	{
+		ArrayList<LabeledSignature> signatures = parseDatabaseFile(database);
+		double[] weights = new double[FeatureExtractor.numberOfGlobalFeatures];
+		Arrays.fill(weights, Double.MIN_VALUE);
+
+		for (LabeledSignature s : signatures)
+		{
+			GlobalFeatureVector v = FeatureExtractor.computeGlobalFeatures(s);
+			for (int i = 0; i < v.size(); i++)
+			{
+				if (v.get(i) > weights[i]) {
+					weights[i] = v.get(i);
+				}
+			}
+		}
+
+		return weights;
+	}
+
+		/**
+	 * @param database The database file containing all signature file paths
+	 * @return The list of each feature normalizing weights, i.e the maximum value find
+	 * over the whole database for each of them
+	 */
+	public double[] findGlobalFeaturesWeightsUsingMean(String database)
+	{
+		ArrayList<LabeledSignature> signatures = parseDatabaseFile(database);
+		double[] weights = new double[FeatureExtractor.numberOfGlobalFeatures];
+		Arrays.fill(weights, Double.MIN_VALUE);
+
+		for (LabeledSignature s : signatures)
+		{
+			GlobalFeatureVector v = FeatureExtractor.computeGlobalFeatures(s);
+			for (int i = 0; i < v.size(); i++) {
+				weights[i] += v.get(i);
+			}
+		}
+
+		for (int i = 0; i < weights.length; i++) {
+			weights[i] /= signatures.size();
+		}
+
+		return weights;
 	}
 }
