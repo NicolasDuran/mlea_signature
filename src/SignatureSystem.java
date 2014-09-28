@@ -27,8 +27,9 @@ import features.PCA;
 
 public class SignatureSystem
 {
+	private static final boolean FEATURE_TEST = false;
 	final int numberOfUsers = 5;
-	final int trainIteration = 3;
+	final int trainIteration = 4;
 
 	double forgeryThreshold;
 	double identityThreshold;
@@ -62,138 +63,213 @@ public class SignatureSystem
 	 */
 	public void measurePerformances(String database)
 	{
-		try {
-			File output = new File("log/perfs.log");
-			FileWriter writer = new FileWriter(output);
+		boolean bestSuccess[] = null;
+		boolean bestForgery[] = null;
+		boolean bestIdentity[] = null;
+		boolean bestIntra[] = null;
+		boolean bestTotal[] = null;
+		double featureGlobal = 0.;
+		double featureForgery = 0.;
+		double featureIdentity = 0.;
+		double featureIntra = 0.;
+		double featureTotal = 0.;
 
-			double globalSuccess = 0.0;
-			double globalForgerySuccess = 0.0;
-			double globalIdentitySuccess = 0.0;
-			double globalIntraSuccess = 0.0;
-			double thresholdMean = 0.0;
+		for (int step = (int) Math.pow(2, 0); step < Math.pow(2, 11); step++) {
 
-			for (int i = 0; i < this.trainIteration; i++)
-			{
-				writer.write("=== Iteration " + i + " ===" + System.getProperty("line.separator"));
+			int binary = step;
+			boolean selector[] = new boolean[15];
+			for (int i = 0; i < 15; i++) {
+				selector[i] = binary % 2 == 1;
+				binary /= 2;
+			}
+			FeatureExtractor.selector = selector;
 
-				// Train
-				System.out.println("================ Train ================");
-				chooseTrainAndTestSignatures(database);
-				this.forgeryThreshold = trainUnversalForgeryThreshold();
-				thresholdMean += this.forgeryThreshold;
+			try {
+				File output = new File("log/perfs.log");
+				FileWriter writer = new FileWriter(output);
 
-				writer.write("Chosen LocalThreshold : " + this.forgeryThreshold + System.getProperty("line.separator"));
-				System.out.println("Chosen LocalThreshold : " + this.forgeryThreshold);
+				double globalSuccess = 0.0;
+				double globalForgerySuccess = 0.0;
+				double globalIdentitySuccess = 0.0;
+				double globalIntraSuccess = 0.0;
+				double thresholdMean = 0.0;
 
-				//this.identityThreshold = trainUnversalIdentityThreshold();
-				//writer.write("GlobalThreshold : " + this.identityThreshold + System.getProperty("line.separator"));
-				//System.out.println("GlobalThreshold : " + this.identityThreshold);
+				for (int i = 0; i < this.trainIteration; i++)
+				{
+					if (!FEATURE_TEST)
+						writer.write("=== Iteration " + i + " ===" + System.getProperty("line.separator"));
 
-				// Test
-				System.out.println("================ Test ================");
+					// Train
+					if (!FEATURE_TEST)
+						System.out.println("================ Train ================");
+					chooseTrainAndTestSignatures(database);
+					this.forgeryThreshold = trainUnversalForgeryThreshold();
+					thresholdMean += this.forgeryThreshold;
 
-				double success = 0.0;
-				double forgerySuccess = 0.0;
-				double identitySuccess = 0.0;
-				double intraSuccess = 0.0;
-				int numberOfForgeryTests = 0;
-				int numberOfIdentityTests = 0;
-				int numberOfIntraTests = 0;
+					if (!FEATURE_TEST) {
+						writer.write("Chosen LocalThreshold : " + this.forgeryThreshold + System.getProperty("line.separator"));
+						System.out.println("Chosen LocalThreshold : " + this.forgeryThreshold);
 
-				for (int j = 0; j < this.testSignatures.size(); j++) {
-					for (int k = j + 1; k < this.testSignatures.size(); k++) {
-						if (j != k)
-						{
-							// Don't compare forgery with forgery
-							if (!this.testSignatures.get(j).isGenuine() && !this.testSignatures.get(k).isGenuine())
-								continue;
+						this.identityThreshold = trainUnversalIdentityThreshold();
+						writer.write("GlobalThreshold : " + this.identityThreshold + System.getProperty("line.separator"));
+						System.out.println("GlobalThreshold : " + this.identityThreshold);
+					}
 
-							// Same user = same ID + genuine
-							boolean realDecision = this.testSignatures.get(j).getUserID() == this.testSignatures.get(k).getUserID() &&
-									this.testSignatures.get(j).isGenuine() == this.testSignatures.get(k).isGenuine();
-							// Compare
-							CompareResult res = Comparator.compareSignatures(this.testSignatures.get(j), this.testSignatures.get(k),
-																			 this.forgeryThreshold, this.identityThreshold);
+					// Test
+					if (!FEATURE_TEST)
+						System.out.println("================ Test ================");
 
-							// Write log
-							writer.write(this.testSignatures.get(j).getName() + (this.testSignatures.get(j).isGenuine() ? " (genuine)" : " (forgery)"));
-							writer.write(" - " + this.testSignatures.get(k).getName() + (this.testSignatures.get(k).isGenuine() ? " (genuine)" : " (forgery)"));
-							writer.write(" : dist = " + res.distance + ", decision = " + res.decision + ", reality = " + realDecision + System.getProperty("line.separator"));
+					double success = 0.0;
+					double forgerySuccess = 0.0;
+					double identitySuccess = 0.0;
+					double intraSuccess = 0.0;
+					int numberOfForgeryTests = 0;
+					int numberOfIdentityTests = 0;
+					int numberOfIntraTests = 0;
 
-							// Count success
-							if (res.decision == realDecision) {
-								success += 1.0;
-							}
-
-							if (this.testSignatures.get(j).getUserID() == this.testSignatures.get(k).getUserID() &&
-								this.testSignatures.get(j).isGenuine() != this.testSignatures.get(k).isGenuine())
+					for (int j = 0; j < this.testSignatures.size(); j++) {
+						for (int k = j + 1; k < this.testSignatures.size(); k++) {
+							if (j != k)
 							{
-								if (res.decision == realDecision)
-									forgerySuccess += 1.0;
-								numberOfForgeryTests++;
-							}
+								// Don't compare forgery with forgery
+								if (!this.testSignatures.get(j).isGenuine() && !this.testSignatures.get(k).isGenuine())
+									continue;
 
-							if (this.testSignatures.get(j).getUserID() == this.testSignatures.get(k).getUserID() &&
-								this.testSignatures.get(j).isGenuine() == this.testSignatures.get(k).isGenuine()) {
-								if (res.decision == realDecision)
-									intraSuccess += 1.0;
-								numberOfIntraTests++;
-							}
+								// Same user = same ID + genuine
+								boolean realDecision = this.testSignatures.get(j).getUserID() == this.testSignatures.get(k).getUserID() &&
+										this.testSignatures.get(j).isGenuine() == this.testSignatures.get(k).isGenuine();
+								// Compare
+								CompareResult res = Comparator.compareSignatures(this.testSignatures.get(j), this.testSignatures.get(k),
+										this.forgeryThreshold, this.identityThreshold);
 
-							if (this.testSignatures.get(j).getUserID() != this.testSignatures.get(k).getUserID() ||
-								this.testSignatures.get(j).isGenuine() == this.testSignatures.get(k).isGenuine())
-							{
-								if (res.decision == realDecision)
-									identitySuccess += 1.0;
-								numberOfIdentityTests++;
-							}
+								// Write log
+								//								writer.write(this.testSignatures.get(j).getName() + (this.testSignatures.get(j).isGenuine() ? " (genuine)" : " (forgery)"));
+								//								writer.write(" - " + this.testSignatures.get(k).getName() + (this.testSignatures.get(k).isGenuine() ? " (genuine)" : " (forgery)"));
+								//								writer.write(" : dist = " + res.distance + ", decision = " + res.decision + ", reality = " + realDecision + System.getProperty("line.separator"));
 
+								// Count success
+								if (res.decision == realDecision) {
+									success += 1.0;
+								}
+
+								if (this.testSignatures.get(j).getUserID() == this.testSignatures.get(k).getUserID() &&
+										this.testSignatures.get(j).isGenuine() != this.testSignatures.get(k).isGenuine())
+								{
+									if (res.decision == realDecision)
+										forgerySuccess += 1.0;
+									numberOfForgeryTests++;
+								}
+
+								if (this.testSignatures.get(j).getUserID() == this.testSignatures.get(k).getUserID() &&
+										this.testSignatures.get(j).isGenuine() == this.testSignatures.get(k).isGenuine()) {
+									if (res.decision == realDecision)
+										intraSuccess += 1.0;
+									numberOfIntraTests++;
+								}
+
+								if (this.testSignatures.get(j).getUserID() != this.testSignatures.get(k).getUserID() ||
+										this.testSignatures.get(j).isGenuine() == this.testSignatures.get(k).isGenuine())
+								{
+									if (res.decision == realDecision)
+										identitySuccess += 1.0;
+									numberOfIdentityTests++;
+								}
+
+							}
 						}
+					}
+
+					success = 100.0 * success / (numberOfForgeryTests + numberOfIdentityTests);
+					forgerySuccess = 100.0 * forgerySuccess / numberOfForgeryTests;
+					identitySuccess = 100.0 * identitySuccess / numberOfIdentityTests;
+					intraSuccess = 100.0 * intraSuccess / numberOfIntraTests;
+
+					globalSuccess += success;
+					globalForgerySuccess += forgerySuccess;
+					globalIdentitySuccess += identitySuccess;
+					globalIntraSuccess += intraSuccess;
+
+					if (!FEATURE_TEST) {
+						System.out.println("[" + i + "]: " + success + "% success over " +
+								numberOfForgeryTests + " forgery tests and " + numberOfIdentityTests + " identity tests.");
+						System.out.println("     \t" + forgerySuccess + "% forgery success");
+						System.out.println("     \t" + identitySuccess + "% identity success");
+						System.out.println("     \t\t" + intraSuccess + "% intra success");
+					}
+
+					// Writer log result
+					if (!FEATURE_TEST) {
+						writer.write("=== Result ===" + System.getProperty("line.separator"));
+						writer.write("=== " + success + "% success ===" + System.getProperty("line.separator"));
+						writer.write("=== " + forgerySuccess + "% forgery success ===" + System.getProperty("line.separator"));
+						writer.write("=== " + identitySuccess + "% identity success ===" + System.getProperty("line.separator"));
+						writer.write("=== " + intraSuccess + "% intra success ===" + System.getProperty("line.separator"));
 					}
 				}
 
-				success = 100.0 * success / (numberOfForgeryTests + numberOfIdentityTests);
-				forgerySuccess = 100.0 * forgerySuccess / numberOfForgeryTests;
-				identitySuccess = 100.0 * identitySuccess / numberOfIdentityTests;
-				intraSuccess = 100.0 * intraSuccess / numberOfIntraTests;
+				thresholdMean /= trainIteration;
+				globalSuccess /= trainIteration;
+				globalForgerySuccess /= trainIteration;
+				globalIdentitySuccess /= trainIteration;
+				globalIntraSuccess /= trainIteration;
 
-				globalSuccess += success;
-				globalForgerySuccess += forgerySuccess;
-				globalIdentitySuccess += identitySuccess;
-				globalIntraSuccess += intraSuccess;
+				if (!FEATURE_TEST) {
+					System.out.println("=================================================");
+					System.out.println("[Threshold]: " + thresholdMean);
+					System.out.println("[Performances]: " + globalSuccess + "% success");
+					System.out.println("                \t" + globalForgerySuccess + "% forgery success");
+					System.out.println("                \t" + globalIdentitySuccess + "% identity success");
+					System.out.println("                \t\t" + globalIntraSuccess + "% intra success");
+				}
 
-				System.out.println("[" + i + "]: " + success + "% success over " +
-						numberOfForgeryTests + " forgery tests and " + numberOfIdentityTests + " identity tests.");
-				System.out.println("     \t" + forgerySuccess + "% forgery success");
-				System.out.println("     \t" + identitySuccess + "% identity success");
-				System.out.println("     \t\t" + intraSuccess + "% intra success");
+				writer.close();
 
-				// Writer log result
-				writer.write("=== Result ===" + System.getProperty("line.separator"));
-				writer.write("=== " + success + "% success ===" + System.getProperty("line.separator"));
-				writer.write("=== " + forgerySuccess + "% forgery success ===" + System.getProperty("line.separator"));
-				writer.write("=== " + identitySuccess + "% identity success ===" + System.getProperty("line.separator"));
-				writer.write("=== " + intraSuccess + "% intra success ===" + System.getProperty("line.separator"));
+				if (globalSuccess > featureGlobal) {
+					featureGlobal = globalSuccess;
+					bestSuccess = FeatureExtractor.selector;
+				}
+				if (globalForgerySuccess > featureForgery) {
+					featureForgery = globalForgerySuccess;
+					bestForgery = FeatureExtractor.selector;
+				}
+				if (globalIdentitySuccess > featureIdentity) {
+					featureIdentity = globalIdentitySuccess;
+					bestIdentity = FeatureExtractor.selector;
+				}
+				if (globalIntraSuccess > featureIntra) {
+					featureIntra = globalIntraSuccess;
+					bestIntra = FeatureExtractor.selector;
+				}
+				if (globalForgerySuccess + globalIdentitySuccess + globalIntraSuccess > featureTotal) {
+					featureTotal = globalForgerySuccess + globalIdentitySuccess + globalIntraSuccess;
+					bestTotal = FeatureExtractor.selector;
+				}
+
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
 
-			thresholdMean /= trainIteration;
-			globalSuccess /= trainIteration;
-			globalForgerySuccess /= trainIteration;
-			globalIdentitySuccess /= trainIteration;
-			globalIntraSuccess /= trainIteration;
-
-			System.out.println("=================================================");
-			System.out.println("[Threshold]: " + thresholdMean);
-			System.out.println("[Performances]: " + globalSuccess + "% success");
-			System.out.println("                \t" + globalForgerySuccess + "% forgery success");
-			System.out.println("                \t" + globalIdentitySuccess + "% identity success");
-			System.out.println("                \t\t" + globalIntraSuccess + "% intra success");
-
-			writer.close();
-
-		} catch (IOException e) {
-			e.printStackTrace();
+			if (!FEATURE_TEST)
+				break;
 		}
+
+		if (FEATURE_TEST) {
+			System.out.println("[Performances]: " + featureGlobal + "% success " + selectorToString(bestSuccess));
+			System.out.println("                \t" + featureForgery + "% forgery success " + selectorToString(bestForgery));
+			System.out.println("                \t" + featureIdentity + "% identity success " + selectorToString(bestIdentity));
+			System.out.println("                \t\t" + featureIntra + "% intra success " + selectorToString(bestIntra));
+			System.out.println(featureTotal + "% Sum success " + selectorToString(bestTotal));
+		}
+	}
+
+	private String selectorToString(boolean selector[]) {
+		StringBuilder builder = new StringBuilder();
+		builder.append("[");
+		for (boolean b : selector) {
+			builder.append(b ? 1 : 0);
+		}
+		builder.append("]");
+		return builder.toString();
 	}
 
 	/**
@@ -318,7 +394,7 @@ public class SignatureSystem
 	{
 		double thresholdMean = 0;
 
-		System.out.println("[Threshold]: Compute forgery threshold for each user");
+		//		System.out.println("[Threshold]: Compute forgery threshold for each user");
 		for (int i = 0; i < numberOfUsers; i++) {
 			thresholdMean += trainPersonalThreshold(this.userGenuineTrainSignatures.get(i), this.userForgeryTrainSignatures.get(i));
 		}

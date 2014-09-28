@@ -17,11 +17,11 @@ public enum LocalFeature
 	VY(11), // size - 1 points
 	AX(12), // size - 1 points
 	AY(13), // size - 1 points
-	CRITICAL_VX(14), // Pour l'instant c'est la meme de VX
-	CRITICAL_VY(15), // Pour l'instant c'est la meme de VY
-	CRITICAL_AX(16), // Pour l'instant c'est la meme de AX
-	CRITICAL_AY(17), // Pour l'instant c'est la meme de AY
-	PRESSURE(18); // size points
+	//	CRITICAL_VX(14), // Pour l'instant c'est la meme de VX
+	//	CRITICAL_VY(15), // Pour l'instant c'est la meme de VY
+	//	CRITICAL_AX(16), // Pour l'instant c'est la meme de AX
+	//	CRITICAL_AY(17), // Pour l'instant c'est la meme de AY
+	PRESSURE(14); // size points
 
 	/**
 	 * Index in local feature vector
