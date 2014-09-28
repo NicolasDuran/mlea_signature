@@ -134,6 +134,8 @@ public class Comparator {
 
 		double localDistance = Comparator.DTW(lv1, lv2);
 		double globalDistance = Comparator.compareGlobalFeature(gv1, gv2);
+		//double distance = Math.abs(localDistance - globalDistance);
+		//System.out.println("Local Distance = " + localDistance + ", globalDistance = " + globalDistance);
 
 		return localDistance;
 	}

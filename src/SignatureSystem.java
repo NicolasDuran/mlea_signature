@@ -28,7 +28,7 @@ import features.PCA;
 public class SignatureSystem
 {
 	final int numberOfUsers = 5;
-	final int trainIteration = 5;
+	final int trainIteration = 30;
 
 	double forgeryThreshold;
 	double identityThreshold;
@@ -383,7 +383,6 @@ public class SignatureSystem
 
 				// Compare signatures
 				CompareResult res = Comparator.compareSignatures(s1, s2, this.forgeryThreshold, this.identityThreshold);
-
 				// Write result
 				writer.write(line + " " + res.distance + " " + res.getDecision() + System.getProperty("line.separator"));
 			}
