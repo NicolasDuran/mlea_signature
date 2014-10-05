@@ -139,7 +139,7 @@ public class Classifier {
 		}
 
 		double perfs = 100.0 * wellPlaced / (leftClass.size() + rightClass.size());
-		System.out.println("Threshold " + threshold + " performances : " + perfs + "%");
+		//System.out.println("Threshold " + threshold + " performances : " + perfs + "%");
 	}
 
 	/**
@@ -148,12 +148,12 @@ public class Classifier {
 	public static void main(String[] args)
 	{
 		ArrayList<Double> classA = new ArrayList<Double>(Arrays.asList(
-			200.0, 205.0, 210.0, 220.0, 230.0, 235.0, 239.0, 246.0, 250.0, 260.0, // outside
-			280.0, 285.0, 300.0, 307.0, 310.0, 330.0)); //inside
+				200.0, 205.0, 210.0, 220.0, 230.0, 235.0, 239.0, 246.0, 250.0, 260.0, // outside
+				280.0, 285.0, 300.0, 307.0, 310.0, 330.0)); //inside
 
 		ArrayList<Double> classB = new ArrayList<Double>(Arrays.asList(
-			335.0, 340.0, 345.0, 349.0, 362.0, 380.0, 390.0, 395.0, 400.0, 405.0, // outside
-			283.0, 290.0, 309.0, 315.0, 320.0, 327.0)); //inside
+				335.0, 340.0, 345.0, 349.0, 362.0, 380.0, 390.0, 395.0, 400.0, 405.0, // outside
+				283.0, 290.0, 309.0, 315.0, 320.0, 327.0)); //inside
 
 		Collections.shuffle(classA);
 		Collections.shuffle(classB);

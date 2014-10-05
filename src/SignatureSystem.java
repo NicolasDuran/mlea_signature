@@ -24,13 +24,14 @@ import features.FeatureExtractor;
 import features.GlobalFeatureVector;
 import features.PCA;
 
-// TODO : tester avec la normalisation en alignant le centre de gravité des signatures à 0
 
-public class SignatureSystem
-{
+public class SignatureSystem {
+	private static final boolean FEATURE_TEST = false;
 	final int numberOfUsers = 5;
-	final int trainIteration = 30;
+	final int trainIteration = 1;
+
 	double threshold;
+	double thresholds[] = new double[5];
 	boolean plotMode;
 
 	private ArrayList<ArrayList<LabeledSignature>> userGenuineTrainSignatures;
@@ -47,135 +48,50 @@ public class SignatureSystem
 	 */
 	public void measurePerformances(String database)
 	{
-		try {
-			File output = new File("log/perfs.log");
-			FileWriter writer = new FileWriter(output);
+		boolean bestVarFeatures[] = null;
+		double bestVar = Double.MAX_VALUE;
 
-			double globalSuccess = 0.0;
-			double globalForgerySuccess = 0.0;
-			double globalIdentitySuccess = 0.0;
-			double globalIntraSuccess = 0.0;
-			double thresholdMean = 0.0;
+		for (int step = (int) Math.pow(2, 0); step < Math.pow(2, 11); step++) {
+
+			int binary = step;
+			boolean selector[] = new boolean[16];
+			for (int i = 0; i < 16; i++) {
+				selector[i] = binary % 2 == 1;
+				binary /= 2;
+			}
+			FeatureExtractor.selector = selector;
+
 
 			for (int i = 0; i < this.trainIteration; i++)
 			{
-				writer.write("=== Iteration " + i + " ===" + System.getProperty("line.separator"));
-
 				// Train
-				System.out.println("================ Train ================");
 				chooseTrainAndTestSignatures(database);
 				this.threshold = trainUnversalForgeryThreshold();
-				thresholdMean += this.threshold;
-
-				writer.write("Chosen threshold : " + this.threshold + System.getProperty("line.separator"));
-				System.out.println("Chosen threshold : " + this.threshold);
-
-				// Test
-				System.out.println("================ Test ================");
-
-				double success = 0.0;
-				double forgerySuccess = 0.0;
-				double identitySuccess = 0.0;
-				double intraSuccess = 0.0;
-				int numberOfForgeryTests = 0;
-				int numberOfIdentityTests = 0;
-				int numberOfIntraTests = 0;
-
-				for (int j = 0; j < this.testSignatures.size(); j++) {
-					for (int k = j + 1; k < this.testSignatures.size(); k++) {
-						if (j != k)
-						{
-							// Don't compare forgery with forgery
-							if (!this.testSignatures.get(j).isGenuine() && !this.testSignatures.get(k).isGenuine())
-								continue;
-
-							// Same user = same ID + genuine
-							boolean realDecision = this.testSignatures.get(j).getUserID() == this.testSignatures.get(k).getUserID() &&
-									this.testSignatures.get(j).isGenuine() == this.testSignatures.get(k).isGenuine();
-							// Compare
-							//System.out.println(this.testSignatures.get(j).getName() + (this.testSignatures.get(j).isGenuine() ? " (genuine)" : " (forgery)") +
-									//" - " + this.testSignatures.get(k).getName() + (this.testSignatures.get(k).isGenuine() ? " (genuine)" : " (forgery)"));
-							CompareResult res = Comparator.compareSignatures(this.testSignatures.get(j), this.testSignatures.get(k), this.threshold);
-
-							// Write log
-							writer.write(this.testSignatures.get(j).getName() + (this.testSignatures.get(j).isGenuine() ? " (genuine)" : " (forgery)"));
-							writer.write(" - " + this.testSignatures.get(k).getName() + (this.testSignatures.get(k).isGenuine() ? " (genuine)" : " (forgery)"));
-							writer.write(" : dist = " + res.distance + ", decision = " + res.decision + ", reality = " + realDecision + System.getProperty("line.separator"));
-
-							// Count success
-							if (res.decision == realDecision) {
-								success += 1.0;
-							}
-
-							if (this.testSignatures.get(j).getUserID() == this.testSignatures.get(k).getUserID() &&
-								this.testSignatures.get(j).isGenuine() != this.testSignatures.get(k).isGenuine())
-							{
-								if (res.decision == realDecision)
-									forgerySuccess += 1.0;
-								numberOfForgeryTests++;
-							}
-
-							if (this.testSignatures.get(j).getUserID() == this.testSignatures.get(k).getUserID() &&
-								this.testSignatures.get(j).isGenuine() == this.testSignatures.get(k).isGenuine()) {
-								if (res.decision == realDecision)
-									intraSuccess += 1.0;
-								numberOfIntraTests++;
-							}
-
-							if (this.testSignatures.get(j).getUserID() != this.testSignatures.get(k).getUserID() ||
-								this.testSignatures.get(j).isGenuine() == this.testSignatures.get(k).isGenuine())
-							{
-								if (res.decision == realDecision)
-									identitySuccess += 1.0;
-								numberOfIdentityTests++;
-							}
-
-						}
-					}
-				}
-
-				success = 100.0 * success / (numberOfForgeryTests + numberOfIdentityTests);
-				forgerySuccess = 100.0 * forgerySuccess / numberOfForgeryTests;
-				identitySuccess = 100.0 * identitySuccess / numberOfIdentityTests;
-				intraSuccess = 100.0 * intraSuccess / numberOfIntraTests;
-
-				globalSuccess += success;
-				globalForgerySuccess += forgerySuccess;
-				globalIdentitySuccess += identitySuccess;
-				globalIntraSuccess += intraSuccess;
-
-				System.out.println("[" + i + "]: " + success + "% success over " +
-						numberOfForgeryTests + " forgery tests and " + numberOfIdentityTests + " identity tests.");
-				System.out.println("     \t" + forgerySuccess + "% forgery success");
-				System.out.println("     \t" + identitySuccess + "% identity success");
-				System.out.println("     \t\t" + intraSuccess + "% intra success");
-
-				// Writer log result
-				writer.write("=== Result ===" + System.getProperty("line.separator"));
-				writer.write("=== " + success + "% success ===" + System.getProperty("line.separator"));
-				writer.write("=== " + forgerySuccess + "% forgery success ===" + System.getProperty("line.separator"));
-				writer.write("=== " + identitySuccess + "% identity success ===" + System.getProperty("line.separator"));
-				writer.write("=== " + intraSuccess + "% intra success ===" + System.getProperty("line.separator"));
 			}
 
-			thresholdMean /= trainIteration;
-			globalSuccess /= trainIteration;
-			globalForgerySuccess /= trainIteration;
-			globalIdentitySuccess /= trainIteration;
-			globalIntraSuccess /= trainIteration;
+			double var = 0;
+			for (double threshold : thresholds) {
+				var += (threshold - this.threshold) * (threshold - this.threshold);
+			}
 
-			System.out.println("=================================================");
-			System.out.println("[Threshold]: " + thresholdMean);
-			System.out.println("[Performances]: " + globalSuccess + "% success");
-			System.out.println("                \t" + globalForgerySuccess + "% forgery success");
-			System.out.println("                \t" + globalIdentitySuccess + "% identity success");
-			System.out.println("                \t\t" + globalIntraSuccess + "% intra success");
+			var /= 5;
+			if (var < bestVar) {
+				bestVar = var;
+				bestVarFeatures = selector;
+			}
 
-			writer.close();
-
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
+		System.out.println("Variance: " + bestVar + " " + selectorToString(bestVarFeatures));
+	}
+
+	private String selectorToString(boolean selector[]) {
+		StringBuilder builder = new StringBuilder();
+		builder.append("[");
+		for (boolean b : selector) {
+			builder.append(b ? 1 : 0);
+		}
+		builder.append("]");
+		return builder.toString();
 	}
 
 	/**
@@ -267,6 +183,32 @@ public class SignatureSystem
 	}
 
 	/**
+	 * Compute the identity threshold, by comparing each user to other users
+	 * Need to chooseTrainAndTest Signatures first
+	 */
+	public double trainUnversalIdentityThreshold()
+	{
+		double thresholdMean = 0;
+
+		for (int i = 0; i < numberOfUsers; i++)
+		{
+			// Combine all user's signatures different from user i
+			ArrayList<LabeledSignature> trainExtra = new ArrayList<LabeledSignature>();
+			for (int j = 0; j < numberOfUsers; j++) {
+				if (j != i) {
+					trainExtra.addAll(this.userGenuineTrainSignatures.get(j));
+				}
+			}
+
+			thresholdMean += trainPersonalThreshold(this.userGenuineTrainSignatures.get(i), trainExtra);
+		}
+
+		thresholdMean /= numberOfUsers;
+
+		return thresholdMean;
+	}
+
+	/**
 	 * Compute the forgery threshold, by comparing each user to his forgery signatures
 	 * Need to chooseTrainAndTest Signatures first
 	 */
@@ -274,9 +216,11 @@ public class SignatureSystem
 	{
 		double thresholdMean = 0;
 
-		System.out.println("[Threshold]: Compute forgery threshold for each user");
+		//		System.out.println("[Threshold]: Compute forgery threshold for each user");
 		for (int i = 0; i < numberOfUsers; i++) {
-			thresholdMean += trainPersonalThreshold(this.userGenuineTrainSignatures.get(i), this.userForgeryTrainSignatures.get(i));
+			double threshold =trainPersonalThreshold(this.userGenuineTrainSignatures.get(i), this.userForgeryTrainSignatures.get(i));
+			thresholds[i] = threshold;
+			thresholdMean += threshold;
 		}
 
 		thresholdMean /= numberOfUsers;
@@ -295,7 +239,7 @@ public class SignatureSystem
 		ArrayList<Double> intraDistances = new ArrayList<Double>();
 		ArrayList<Double> extraDistances = new ArrayList<Double>();
 
-		// Compute extra distances by comparing the user to himself
+		// Compute intra distances by comparing the user to himself
 		for (Signature gs : userTrain) {
 			for (Signature fs : signatureTrain) {
 				double d = Comparator.compareSignatures(gs, fs);
@@ -303,9 +247,9 @@ public class SignatureSystem
 			}
 		}
 
-		// Compute intra distances by comparaing the user to other signatures
+		// Compute extra distances by comparaing the user to other signatures
 		for (int i = 0; i < userTrain.size(); i++) {
-			for (int j = i + 1; j < userTrain.size(); j++) {
+			for (int j = i; j < userTrain.size(); j++) {
 				double d = Comparator.compareSignatures(userTrain.get(i), userTrain.get(j));
 				intraDistances.add(d);
 			}
@@ -352,6 +296,7 @@ public class SignatureSystem
 
 				// Compare signatures
 				CompareResult res = Comparator.compareSignatures(s1, s2, this.threshold);
+
 				// Write result
 				writer.write(line + " " + res.distance + " " + res.getDecision() + System.getProperty("line.separator"));
 			}
@@ -401,7 +346,7 @@ public class SignatureSystem
 		return database;
 	}
 
-		/**
+	/**
 	 * @param database The database file containing all signature file paths
 	 * @return The eigen vectors to convert global features into a new space with less dimension
 	 * @see PCA.computeNewCoordinates
@@ -444,7 +389,7 @@ public class SignatureSystem
 		return weights;
 	}
 
-		/**
+	/**
 	 * @param database The database file containing all signature file paths
 	 * @return The list of each feature normalizing weights, i.e the maximum value find
 	 * over the whole database for each of them
