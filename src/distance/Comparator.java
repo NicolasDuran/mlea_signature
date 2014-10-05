@@ -14,6 +14,38 @@ import features.PCA;
 
 public class Comparator {
 
+	private static final double[] featuresWeightsMax = {
+			9.176347631978212, // TOTAL_LENGTH
+			9463.0, // DURATION
+			1.1517217891750877, // START_END_DISTANCE
+			7.360833724786931E-4, // VX_MEAN
+			2.643473364006496E-4, // VY_MEAN
+			0.0029265838106987126, // V_MEAN
+			0.011944335355050966, // V_MAX
+			4.6618848007920815E-5, // AX_MEAN
+			8.828006367855637E-6, // AX_MEAN
+			6.146828537503127E-5, // A_MEAN
+			0.0011581900665088296, // A_MAX
+			9.450512326270836, // ANGLE_SUM
+			-1.0480207798949728 // XY_RELATION
+	};
+
+	private static final double[] featuresWeightsMean = {
+			4.637219405038378, // TOTAL_LENGTH
+			3413.29, // DURATION
+			0.8346479599931134, // START_END_DISTANCE
+			2.7081517563692773E-4, // VX_MEAN
+			-1.5192612115486133E-4, // VY_MEAN
+			0.0015859916604649127, // V_MEAN
+			0.0034334200551904104, // V_MAX
+			4.102624540520484E-6, // AX_MEAN
+			-1.8674364112875816E-6, // AX_MEAN
+			2.057517092812041E-5, // A_MEAN
+			1.0373925942935356E-4, // A_MAX
+			25.24995654288044, // ANGLE_SUM
+			864.9590470045947 // XY_RELATION
+	};
+
 	//Based on pseudo code found here :
 	//http://en.wikipedia.org/w/index.php?title=Dynamic_time_warping&oldid=623046081
 	public static double DTW(LocalFeatureVector v1, LocalFeatureVector v2)
@@ -68,13 +100,19 @@ public class Comparator {
 	    return DTW[v1_size][v2_size];
 	}
 
+	/**
+	 * @param v1 first GlobalFeatureVector
+	 * @param v2 second GlobalFeatureVector
+	 * @return The euclidian distance between those to vectors
+	 */
 	public static double compareGlobalFeature(ArrayList<Double> v1, ArrayList<Double> v2)
 	{
 		int size = Math.min(v1.size(), v2.size()); // just in case
 		double dist = 0.0;
 
 		for (int i = 0; i < size; i++) {
-			dist += Math.pow(v1.get(i) - v2.get(i), 2);
+			double component = Math.pow((v1.get(i) - v2.get(i))/* / featuresWeightsMean[i]*/, 2);
+			dist += component;
 		}
 
 		return Math.sqrt(dist);
@@ -97,7 +135,7 @@ public class Comparator {
 		double localDistance = Comparator.DTW(lv1, lv2);
 		double globalDistance = Comparator.compareGlobalFeature(gv1, gv2);
 
-		return  globalDistance;
+		return localDistance;
 	}
 
 	/**

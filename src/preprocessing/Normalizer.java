@@ -73,7 +73,8 @@ public class Normalizer {
 		deleteDouble(signature);
 		rotate(signature);
 		resize(signature, 1);
-		translateToCenter(signature);
+		translateToGravityCenter(signature);
+		//translateToOrigin(signature);
 	}
 
 	/**
@@ -131,10 +132,30 @@ public class Normalizer {
 	}
 
 	/**
+	 * Translate the signature to set the gravity center as origin.
+	 * @param signature The signature to translate.
+	 */
+	private void translateToGravityCenter(Signature signature) {
+		double meanX = 0;
+		double meanY = 0;
+
+		for (Point point : signature.getPoints()) {
+			meanX += point.getX();
+			meanY = point.getY();
+		}
+
+		meanX /= n;
+		meanY /= n;
+
+		for (Point point : signature.getPoints())
+			point.translate(-meanX, -meanY);
+	}
+
+	/**
 	 * Translate the signature to minimize coordinates keeping them positive.
 	 * @param signature The signature to translate.
 	 */
-	private void translateToCenter(Signature signature) {
+	private void translateToOrigin(Signature signature) {
 		double minX = Double.MAX_VALUE;
 		double minY = Double.MIN_VALUE;
 

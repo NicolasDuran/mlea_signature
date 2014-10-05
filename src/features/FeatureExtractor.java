@@ -8,7 +8,10 @@ import common.Signature;
 
 public class FeatureExtractor {
 
-	private static GlobalFeatureVector computeGlobalFeatures(Signature s)
+	public static final int numberOfGlobalFeatures = 13;
+	public static final int numberOfLocalFeatures = 15;
+
+	public static GlobalFeatureVector computeGlobalFeatures(Signature s)
 	{
 		GlobalFeatureVector globVect = new GlobalFeatureVector();
 		double totalLength = 0;
@@ -108,9 +111,10 @@ public class FeatureExtractor {
 		return globVect;
 	}
 
-	private static LocalFeatureVector computeLocalFeatures(Signature s)
+	public static LocalFeatureVector computeLocalFeatures(Signature s)
 	{
 		ArrayList<Double> pressure = new ArrayList<Double>();
+		ArrayList<Double> azimuth = new ArrayList<Double>();
 		ArrayList<Double> times = new ArrayList<Double>();
 		ArrayList<Double> posx = new ArrayList<Double>();
 		ArrayList<Double> posy = new ArrayList<Double>();
@@ -141,6 +145,7 @@ public class FeatureExtractor {
 			posx.add(p.getX());
 			posy.add(p.getY());
 			pressure.add((new Integer(p.getPressure())).doubleValue());
+			azimuth.add((new Integer(p.getAzimuth())).doubleValue());
 
 			// Compute speed between critical points
 			if (p.isCritical()) {
@@ -250,42 +255,45 @@ public class FeatureExtractor {
 		//		locVect.add(criticalax);
 		//		locVect.add(criticalay);
 		locVect.add(pressure);
+		locVect.add(azimuth);
 
 		return locVect;
 	}
 
-	public static boolean selector[] = new boolean[15];
+	public static boolean selector[] = new boolean[16];
 
 	public static GlobalFeatureVector extractGlobalFeature(Signature s)
 	{
 		GlobalFeatureVector features = computeGlobalFeatures(s);
 		GlobalFeatureVector v = new GlobalFeatureVector();
 
-		//		if (selector[0]) v.add(features.get(GlobalFeature.TOTAL_LENGTH.index));
-		//		if (selector[1]) v.add(features.get(GlobalFeature.DURATION.index));
-		//		if (selector[2]) v.add(features.get(GlobalFeature.START_END_DISTANCE.index));
-		//		if (selector[3]) v.add(features.get(GlobalFeature.VX_MEAN.index));
-		//		if (selector[4]) v.add(features.get(GlobalFeature.VY_MEAN.index));
-		//		if (selector[5]) v.add(features.get(GlobalFeature.AX_MEAN.index));
-		//		if (selector[6]) v.add(features.get(GlobalFeature.AY_MEAN.index));
-		//		if (selector[7]) v.add(features.get(GlobalFeature.A_MEAN.index));
-		//		if (selector[8]) v.add(features.get(GlobalFeature.A_MAX.index));
-		//		if (selector[9]) v.add(features.get(GlobalFeature.V_MAX.index));
-		//		if (selector[10]) v.add(features.get(GlobalFeature.ANGLE_SUM.index));
-		//		if (selector[11]) v.add(features.get(GlobalFeature.XY_RELATION.index));
+		if (selector[0]) v.add(features.get(GlobalFeature.TOTAL_LENGTH.index));
+		if (selector[1]) v.add(features.get(GlobalFeature.DURATION.index));
+		if (selector[2]) v.add(features.get(GlobalFeature.START_END_DISTANCE.index));
+		if (selector[3]) v.add(features.get(GlobalFeature.VX_MEAN.index));
+		if (selector[4]) v.add(features.get(GlobalFeature.VY_MEAN.index));
+		if (selector[5]) v.add(features.get(GlobalFeature.V_MEAN.index));
+		if (selector[6]) v.add(features.get(GlobalFeature.V_MAX.index));
+		if (selector[7]) v.add(features.get(GlobalFeature.AX_MEAN.index));
+		if (selector[8]) v.add(features.get(GlobalFeature.AY_MEAN.index));
+		if (selector[9]) v.add(features.get(GlobalFeature.A_MEAN.index));
+		if (selector[10]) v.add(features.get(GlobalFeature.A_MAX.index));
+		if (selector[11]) v.add(features.get(GlobalFeature.ANGLE_SUM.index));
+		if (selector[12]) v.add(features.get(GlobalFeature.XY_RELATION.index));
 
 		v.add(features.get(GlobalFeature.TOTAL_LENGTH.index));
 		v.add(features.get(GlobalFeature.DURATION.index));
-		//v.add(features.get(GlobalFeature.START_END_DISTANCE.index));
-		//v.add(features.get(GlobalFeature.VX_MEAN.index));
-		//v.add(features.get(GlobalFeature.VY_MEAN.index));
-		//v.add(features.get(GlobalFeature.AX_MEAN.index));
-		v.add(features.get(GlobalFeature.AY_MEAN.index));
-		//v.add(features.get(GlobalFeature.A_MEAN.index));
-		v.add(features.get(GlobalFeature.A_MAX.index));
+		v.add(features.get(GlobalFeature.START_END_DISTANCE.index));
+		v.add(features.get(GlobalFeature.VX_MEAN.index));
+		v.add(features.get(GlobalFeature.VY_MEAN.index));
+		v.add(features.get(GlobalFeature.V_MEAN.index));
 		v.add(features.get(GlobalFeature.V_MAX.index));
+		v.add(features.get(GlobalFeature.AX_MEAN.index));
+		v.add(features.get(GlobalFeature.AY_MEAN.index));
+		v.add(features.get(GlobalFeature.A_MEAN.index));
+		v.add(features.get(GlobalFeature.A_MAX.index));
 		v.add(features.get(GlobalFeature.ANGLE_SUM.index));
-		//v.add(features.get(GlobalFeature.XY_RELATION.index));
+		v.add(features.get(GlobalFeature.XY_RELATION.index));
 
 		return v;
 	}
@@ -295,39 +303,41 @@ public class FeatureExtractor {
 		LocalFeatureVector features = computeLocalFeatures(s);
 		LocalFeatureVector v = new LocalFeatureVector();
 
-		//		if (selector[0]) v.add(features.get(LocalFeature.TIME_INDEX.index));
+		//		if (selector[12]) v.add(features.get(LocalFeature.TIME_INDEX.index));
 		//		if (selector[1]) v.add(features.get(LocalFeature.POS_X.index));
 		//		if (selector[2]) v.add(features.get(LocalFeature.POS_Y.index));
 		//		if (selector[3]) v.add(features.get(LocalFeature.POS_DX.index));
 		//		if (selector[4]) v.add(features.get(LocalFeature.POS_DY.index));
-		//		if (selector[5]) v.add(features.get(LocalFeature.ABS_POS_DX.index));
-		//		if (selector[6]) v.add(features.get(LocalFeature.ABS_POS_DY.index));
+		//		if (selector[13]) v.add(features.get(LocalFeature.ABS_POS_DX.index));
+		//		if (selector[14]) v.add(features.get(LocalFeature.ABS_POS_DY.index));
 		//		if (selector[7]) v.add(features.get(LocalFeature.COS_ALPHA.index));
 		//		if (selector[8]) v.add(features.get(LocalFeature.SIN_ALPHA.index));
 		//		if (selector[9]) v.add(features.get(LocalFeature.CURVATURE.index));
-		//		if (selector[10]) v.add(features.get(LocalFeature.PRESSURE.index));
-		//		if (selector[11]) v.add(features.get(LocalFeature.VX.index));
-		//		if (selector[12]) v.add(features.get(LocalFeature.VY.index));
-		//		if (selector[13]) v.add(features.get(LocalFeature.AX.index));
-		//		if (selector[14]) v.add(features.get(LocalFeature.AY.index));
+		//		if (selector[10]) v.add(features.get(LocalFeature.VX.index));
+		//		if (selector[11]) v.add(features.get(LocalFeature.VY.index));
+		//		if (selector[0]) v.add(features.get(LocalFeature.AX.index));
+		//		if (selector[5]) v.add(features.get(LocalFeature.AY.index));
+		//		if (selector[6]) v.add(features.get(LocalFeature.PRESSURE.index));
+		//		if (selector[15]) v.add(features.get(LocalFeature.AZIMUTH.index));
 
 		//v.add(features.get(LocalFeature.TIME_INDEX.index));
 		v.add(features.get(LocalFeature.POS_X.index));
-		v.add(features.get(LocalFeature.POS_Y.index));
-		//v.add(features.get(LocalFeature.POS_DX.index));
+		//v.add(features.get(LocalFeature.POS_Y.index));
+		v.add(features.get(LocalFeature.POS_DX.index));
 		//v.add(features.get(LocalFeature.POS_DY.index));
 		//v.add(features.get(LocalFeature.ABS_POS_DX.index));
-		v.add(features.get(LocalFeature.ABS_POS_DY.index));
-		v.add(features.get(LocalFeature.COS_ALPHA.index));
+		//v.add(features.get(LocalFeature.ABS_POS_DY.index));
+		//v.add(features.get(LocalFeature.COS_ALPHA.index));
 		v.add(features.get(LocalFeature.SIN_ALPHA.index));
 		//v.add(features.get(LocalFeature.CURVATURE.index));
-		v.add(features.get(LocalFeature.PRESSURE.index));
 		v.add(features.get(LocalFeature.VX.index));
 		//v.add(features.get(LocalFeature.VY.index));
 		//v.add(features.get(LocalFeature.AX.index));
-		//v.add(features.get(LocalFeature.AY.index));
+		v.add(features.get(LocalFeature.AY.index));
+		//v.add(features.get(LocalFeature.PRESSURE.index));
+		//v.add(features.get(LocalFeature.AZIMUTH.index));
 
-		normalize(v);
+		//normalize(v);
 
 		return v;
 	}

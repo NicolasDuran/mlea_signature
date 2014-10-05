@@ -38,6 +38,17 @@ public class Main
 			syst.plotMode = true;
 			syst.measurePerformances(args[1]);
 		}
+		else if (args[0].equals("--fweights")) {
+			if (args.length < 2) {
+				System.err.println(usage);
+				return;
+			}
+
+			double[] w = syst.findGlobalFeaturesWeightsUsingMean(args[1]);
+			for (int i = 0; i < w.length; i++) {
+				System.out.println("[" + i + "] = " + w[i]);
+			}
+		}
 		// Compare signatures provided in the given file, and write the result in the given output filename
 		else {
 			syst.forgeryThreshold = 389.64616403731014;

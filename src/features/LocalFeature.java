@@ -21,7 +21,8 @@ public enum LocalFeature
 	//	CRITICAL_VY(15), // Pour l'instant c'est la meme de VY
 	//	CRITICAL_AX(16), // Pour l'instant c'est la meme de AX
 	//	CRITICAL_AY(17), // Pour l'instant c'est la meme de AY
-	PRESSURE(14); // size points
+	PRESSURE(14), // size points
+	AZIMUTH(15);
 
 	/**
 	 * Index in local feature vector
