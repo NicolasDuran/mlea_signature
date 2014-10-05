@@ -134,10 +134,12 @@ public class Comparator {
 
 		double localDistance = Comparator.DTW(lv1, lv2);
 		double globalDistance = Comparator.compareGlobalFeature(gv1, gv2);
-		//double distance = Math.abs(localDistance - globalDistance);
 		//System.out.println("Local Distance = " + localDistance + ", globalDistance = " + globalDistance);
 
-		return localDistance;
+		//double distance = -globalDistance;
+		double distance = -localDistance;
+
+		return distance;
 	}
 
 	/**
@@ -162,7 +164,7 @@ public class Comparator {
 		double localDistance = Comparator.DTW(lv1, lv2);
 		double globalDistance = Comparator.compareGlobalFeature(new_gv1, new_gv2);
 
-		return  globalDistance;
+		return  localDistance;
 	}
 
 	/**
@@ -174,11 +176,14 @@ public class Comparator {
 	 * @return Returns the measured distance between those signature
 	 * and wether they are from the same person or not
 	 */
-	public static CompareResult compareSignatures(Signature s1, Signature s2, double localThreshold, double globalThreshold)
+	public static CompareResult compareSignatures(Signature s1, Signature s2, double threshold)
 	{
 		CompareResult res = new CompareResult();
-		res.distance = compareSignatures(s1, s2);
-		res.decision = res.distance < localThreshold;
+		double dist = compareSignatures(s1, s2);
+		res.decision = dist > threshold;
+
+		//res.distance = 100.0 / dist;
+		res.distance = dist;
 
 		return res;
 	}
@@ -194,11 +199,11 @@ public class Comparator {
 	 * @return Returns the measured distance between those signature
 	 * and wether they are from the same person or not
 	 */
-	public static CompareResult compareSignatures(Signature s1, Signature s2, ArrayList<RealVector> pca_vectors, double localThreshold, double globalThreshold)
+	public static CompareResult compareSignatures(Signature s1, Signature s2, ArrayList<RealVector> pca_vectors, double threshold)
 	{
 		CompareResult res = new CompareResult();
 		res.distance = compareSignatures(s1, s2, pca_vectors);
-		res.decision = res.distance < localThreshold;
+		res.decision = res.distance < threshold;
 
 		return res;
 	}

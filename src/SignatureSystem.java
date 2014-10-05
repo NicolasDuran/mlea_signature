@@ -24,15 +24,13 @@ import features.FeatureExtractor;
 import features.GlobalFeatureVector;
 import features.PCA;
 
+// TODO : tester avec la normalisation en alignant le centre de gravité des signatures à 0
 
 public class SignatureSystem
 {
 	final int numberOfUsers = 5;
 	final int trainIteration = 30;
-
-	double forgeryThreshold;
-	double identityThreshold;
-
+	double threshold;
 	boolean plotMode;
 
 	private ArrayList<ArrayList<LabeledSignature>> userGenuineTrainSignatures;
@@ -66,15 +64,11 @@ public class SignatureSystem
 				// Train
 				System.out.println("================ Train ================");
 				chooseTrainAndTestSignatures(database);
-				this.forgeryThreshold = trainUnversalForgeryThreshold();
-				thresholdMean += this.forgeryThreshold;
+				this.threshold = trainUnversalForgeryThreshold();
+				thresholdMean += this.threshold;
 
-				writer.write("Chosen LocalThreshold : " + this.forgeryThreshold + System.getProperty("line.separator"));
-				System.out.println("Chosen LocalThreshold : " + this.forgeryThreshold);
-
-				//this.identityThreshold = trainUnversalIdentityThreshold();
-				//writer.write("GlobalThreshold : " + this.identityThreshold + System.getProperty("line.separator"));
-				//System.out.println("GlobalThreshold : " + this.identityThreshold);
+				writer.write("Chosen threshold : " + this.threshold + System.getProperty("line.separator"));
+				System.out.println("Chosen threshold : " + this.threshold);
 
 				// Test
 				System.out.println("================ Test ================");
@@ -99,8 +93,9 @@ public class SignatureSystem
 							boolean realDecision = this.testSignatures.get(j).getUserID() == this.testSignatures.get(k).getUserID() &&
 									this.testSignatures.get(j).isGenuine() == this.testSignatures.get(k).isGenuine();
 							// Compare
-							CompareResult res = Comparator.compareSignatures(this.testSignatures.get(j), this.testSignatures.get(k),
-																			 this.forgeryThreshold, this.identityThreshold);
+							//System.out.println(this.testSignatures.get(j).getName() + (this.testSignatures.get(j).isGenuine() ? " (genuine)" : " (forgery)") +
+									//" - " + this.testSignatures.get(k).getName() + (this.testSignatures.get(k).isGenuine() ? " (genuine)" : " (forgery)"));
+							CompareResult res = Comparator.compareSignatures(this.testSignatures.get(j), this.testSignatures.get(k), this.threshold);
 
 							// Write log
 							writer.write(this.testSignatures.get(j).getName() + (this.testSignatures.get(j).isGenuine() ? " (genuine)" : " (forgery)"));
@@ -272,32 +267,6 @@ public class SignatureSystem
 	}
 
 	/**
-	 * Compute the identity threshold, by comparing each user to other users
-	 * Need to chooseTrainAndTest Signatures first
-	 */
-	public double trainUnversalIdentityThreshold()
-	{
-		double thresholdMean = 0;
-
-		for (int i = 0; i < numberOfUsers; i++)
-		{
-			// Combine all user's signatures different from user i
-			ArrayList<LabeledSignature> trainExtra = new ArrayList<LabeledSignature>();
-			for (int j = 0; j < numberOfUsers; j++) {
-				if (j != i) {
-					trainExtra.addAll(this.userGenuineTrainSignatures.get(j));
-				}
-			}
-
-			thresholdMean += trainPersonalThreshold(this.userGenuineTrainSignatures.get(i), trainExtra);
-		}
-
-		thresholdMean /= numberOfUsers;
-
-		return thresholdMean;
-	}
-
-	/**
 	 * Compute the forgery threshold, by comparing each user to his forgery signatures
 	 * Need to chooseTrainAndTest Signatures first
 	 */
@@ -326,7 +295,7 @@ public class SignatureSystem
 		ArrayList<Double> intraDistances = new ArrayList<Double>();
 		ArrayList<Double> extraDistances = new ArrayList<Double>();
 
-		// Compute intra distances by comparing the user to himself
+		// Compute extra distances by comparing the user to himself
 		for (Signature gs : userTrain) {
 			for (Signature fs : signatureTrain) {
 				double d = Comparator.compareSignatures(gs, fs);
@@ -334,9 +303,9 @@ public class SignatureSystem
 			}
 		}
 
-		// Compute extra distances by comparaing the user to other signatures
+		// Compute intra distances by comparaing the user to other signatures
 		for (int i = 0; i < userTrain.size(); i++) {
-			for (int j = i; j < userTrain.size(); j++) {
+			for (int j = i + 1; j < userTrain.size(); j++) {
 				double d = Comparator.compareSignatures(userTrain.get(i), userTrain.get(j));
 				intraDistances.add(d);
 			}
@@ -382,7 +351,7 @@ public class SignatureSystem
 				Preprocessor.normalizeAndReduce(s2);
 
 				// Compare signatures
-				CompareResult res = Comparator.compareSignatures(s1, s2, this.forgeryThreshold, this.identityThreshold);
+				CompareResult res = Comparator.compareSignatures(s1, s2, this.threshold);
 				// Write result
 				writer.write(line + " " + res.distance + " " + res.getDecision() + System.getProperty("line.separator"));
 			}

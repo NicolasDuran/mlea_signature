@@ -51,7 +51,7 @@ public class Main
 		}
 		// Compare signatures provided in the given file, and write the result in the given output filename
 		else {
-			syst.forgeryThreshold = 389.64616403731014;
+			syst.threshold = -395.93222763396045;
 			syst.compareSignaturesFromFile(args[0], args[1]);
 		}
 
