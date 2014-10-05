@@ -24,11 +24,11 @@ import org.jfree.util.ShapeUtilities;
 public class PlotChart {
 
 
-	private static XYSeriesCollection createDataset(ArrayList<Double> tab, XYSeriesCollection entry, String name) {
+	private static XYSeriesCollection createDataset(ArrayList<Double> tab, XYSeriesCollection entry, double y, String name) {
 		XYSeriesCollection result = entry;
 	    XYSeries series = new XYSeries(name);
 	    for (int i = 0; i < tab.size(); i++) {
-	        series.add(tab.get(i), new Double(0));
+	        series.add(tab.get(i), new Double(y));
 	    }
 	    result.addSeries(series);
 	    return result;
@@ -51,8 +51,8 @@ public class PlotChart {
 		XYSeriesCollection class1 = new XYSeriesCollection();
 		XYSeriesCollection class2 = new XYSeriesCollection();
 
-		class1 = createDataset(tab1, class1, "Intra");
-		class2 = createDataset(tab2, class2, "Inter");
+		class1 = createDataset(tab1, class1, 0.1, "Intra");
+		class2 = createDataset(tab2, class2, 0, "Inter");
 
 		JFreeChart chart = ChartFactory.createXYLineChart(
 				figureName,
@@ -108,8 +108,8 @@ public class PlotChart {
 		XYSeriesCollection class2 = new XYSeriesCollection();
 		XYSeriesCollection thresholdset = new XYSeriesCollection();
 
-		class1 = createDataset(tab1, class1, "Intra");
-		class2 = createDataset(tab2, class2, "Inter");
+		class1 = createDataset(tab1, class1, 0.1, "Intra");
+		class2 = createDataset(tab2, class2, 0, "Inter");
 		thresholdset = createDataSet(threshold, thresholdset, "Threshold");
 
 		JFreeChart chart = ChartFactory.createXYLineChart(

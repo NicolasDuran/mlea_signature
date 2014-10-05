@@ -27,7 +27,7 @@ public class Classifier {
 		double threshold = 0;
 
 		int i = 0;
-		while (ub - lb > 0.1)
+		while (ub - lb > 0.0001)
 		{
 			leftClassBadPlaced.clear();
 			rightClassBadPlaced.clear();
